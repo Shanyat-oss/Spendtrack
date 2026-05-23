@@ -16,13 +16,20 @@
   --red:#B83232;--red-light:#F5EAEA;--amber:#8A6A20;--amber-light:#F5EDD8;
   --bg:#F8F5F1;--surface:#FFFFFF;--surface2:#EEEAE4;--border:rgba(0,0,0,0.08);
   --text:#1A1510;--text2:#6B6460;--text3:#B0A89E;
-  --nav-h:60px;--safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
+  --nav-h:64px;--safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
   --radius:14px;--radius-sm:10px;--shadow:0 2px 16px rgba(0,0,0,0.06);
 }
 @media(prefers-color-scheme:dark){
   :root{--bg:#181512;--surface:#201D1A;--surface2:#2C2825;--border:rgba(255,255,255,0.08);
   --text:#F2EDE6;--text2:#A09288;--text3:#5C5248;--teal-light:#3A1A08;--teal:#D4722E;--teal-dark:#FAEEE6;
   --teal-mid:#A05530;--red-light:#3A1510;--amber-light:#3A2A10;--shadow:0 2px 16px rgba(0,0,0,0.4);}
+}
+/* Standalone PWA mode: guarantee safe area minimums regardless of env() resolution */
+@media all and (display-mode:standalone){
+  :root{
+    --safe-top:max(env(safe-area-inset-top,44px),44px);
+    --safe-bot:max(env(safe-area-inset-bottom,20px),20px);
+  }
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
@@ -57,8 +64,8 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 #bottom-nav{background:var(--surface);border-top:.5px solid var(--border);
   display:flex;align-items:stretch;padding-bottom:var(--safe-bot);flex-shrink:0;position:relative;z-index:10}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;padding:8px 4px;background:none;border:none;cursor:pointer;color:var(--text3);
-  transition:color .15s;font-size:10px;font-weight:500}
+  gap:4px;padding:10px 4px 8px;background:none;border:none;cursor:pointer;color:var(--text3);
+  transition:color .15s;font-size:10px;font-weight:500;min-height:var(--nav-h)}
 .nav-item.active{color:var(--teal)}
 .nav-item svg{width:24px;height:24px}
 
