@@ -1,4 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
-  <rect width="192" height="192" rx="38" fill="#1A1510"/>
-  <text x="96" y="122" text-anchor="middle" font-size="70" font-family="system-ui,-apple-system,sans-serif" font-weight="600" letter-spacing="-2" fill="#F2EDE6">S$</text>
+  <defs>
+    <linearGradient id="fade" x1="0" y1="42" x2="0" y2="166" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="white" stop-opacity="1"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0.25"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="42" fill="#A06248"/>
+  <rect x="9" y="9" width="174" height="174" rx="35" fill="none"
+        stroke="rgba(255,255,255,0.5)" stroke-width="3"/>
+  <text x="96" y="104" text-anchor="middle" dominant-baseline="middle"
+        font-size="108" font-family="-apple-system,Helvetica Neue,Arial,sans-serif"
+        font-weight="300" fill="url(#fade)">$</text>
 </svg>
