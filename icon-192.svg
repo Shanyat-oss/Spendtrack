@@ -1,14 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
   <defs>
-    <linearGradient id="fade" x1="0" y1="42" x2="0" y2="166" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="white" stop-opacity="1"/>
-      <stop offset="100%" stop-color="white" stop-opacity="0.25"/>
+    <style>@import url('https://cdn.jsdelivr.net/npm/@fontsource/poppins@5/600.css');</style>
+    <linearGradient id="bev" x1="152.5" y1="162.1" x2="34.5" y2="157.5" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="white" stop-opacity="0"/>
+      <stop offset="0.35" stop-color="white" stop-opacity="0.88"/>
+      <stop offset="0.65" stop-color="white" stop-opacity="0.88"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
     </linearGradient>
   </defs>
-  <rect width="192" height="192" rx="42" fill="#A06248"/>
-  <rect x="9" y="9" width="174" height="174" rx="35" fill="none"
-        stroke="rgba(255,255,255,0.5)" stroke-width="3"/>
-  <text x="96" y="104" text-anchor="middle" dominant-baseline="middle"
-        font-size="108" font-family="-apple-system,Helvetica Neue,Arial,sans-serif"
-        font-weight="300" fill="url(#fade)">$</text>
+  <circle cx="96" cy="96" r="93" fill="#C05C2A"/>
+  <text x="96" y="96" text-anchor="middle" dominant-baseline="central"
+        font-family="'Poppins', -apple-system, 'Helvetica Neue', Arial, sans-serif"
+        font-weight="600" font-size="119" fill="white">$</text>
+  <path d="M 152.5 162.1 A 87.0 87.0 0 0 1 29.9 39.5"
+        fill="none" stroke="url(#bev)" stroke-width="7.5" stroke-linecap="round"/>
 </svg>

@@ -24,6 +24,26 @@
   --text:#F2EDE6;--text2:#A09288;--text3:#5C5248;--teal-light:#3A1A08;--teal:#D4722E;--teal-dark:#FAEEE6;
   --teal-mid:#A05530;--red-light:#3A1510;--amber-light:#3A2A10;--shadow:0 2px 16px rgba(0,0,0,0.4);}
 }
+/* Manual theme override — higher specificity than media query */
+html[data-theme="dark"]{--bg:#181512;--surface:#201D1A;--surface2:#2C2825;--border:rgba(255,255,255,0.08);
+  --text:#F2EDE6;--text2:#A09288;--text3:#5C5248;--teal-light:#3A1A08;--teal:#D4722E;--teal-dark:#FAEEE6;
+  --teal-mid:#A05530;--red-light:#3A1510;--amber-light:#3A2A10;--shadow:0 2px 16px rgba(0,0,0,0.4);}
+html[data-theme="light"]{--teal:#C05C2A;--teal-dark:#7A3010;--teal-light:#FAEEE6;--teal-mid:#B06030;
+  --red:#B83232;--red-light:#F5EAEA;--amber:#8A6A20;--amber-light:#F5EDD8;
+  --bg:#F8F5F1;--surface:#FFFFFF;--surface2:#EEEAE4;--border:rgba(0,0,0,0.08);
+  --text:#1A1510;--text2:#6B6460;--text3:#B0A89E;--shadow:0 2px 16px rgba(0,0,0,0.06);}
+/* CALCULATOR KEYPAD */
+.calc-display-wrap{text-align:center;padding:8px 16px 2px}
+.calc-expr-line{font-size:13px;color:var(--text2);min-height:18px;word-break:break-all;margin-bottom:2px}
+.calc-display{font-size:42px;font-weight:700;color:var(--text);line-height:1.1;min-height:50px}
+.calc-keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:6px 16px 14px}
+.calc-key{background:var(--surface2);border:none;border-radius:var(--radius-sm);font-size:22px;font-weight:600;
+  color:var(--text);padding:0;height:54px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .1s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.calc-key:active{filter:brightness(.9)}
+.calc-key.op{background:var(--teal-light);color:var(--teal)}
+.calc-key.eq{background:var(--teal);color:white}
+.calc-key.clr{color:var(--red)}
 /* Standalone PWA mode: guarantee safe area minimums regardless of env() resolution */
 @media all and (display-mode:standalone){
   :root{
@@ -332,7 +352,10 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
       </svg>
     </button>
     <span id="header-title">SpendTrack</span>
-    <div id="streak-badge">🔥 <span id="streak-count">0</span></div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button class="header-btn" id="btn-theme" aria-label="Toggle theme" style="font-size:18px">🌙</button>
+      <div id="streak-badge">🔥 <span id="streak-count">0</span></div>
+    </div>
   </div>
 
   <div id="date-nav">
@@ -393,8 +416,30 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
       <button class="modal-close-btn" id="expense-save" style="background:var(--teal);color:white;font-weight:700;font-size:13px;width:auto;padding:0 14px;border-radius:20px">Save</button>
     </div>
     <div class="modal-body">
-      <div class="amount-prefix">S$</div>
-      <input class="amount-input" id="exp-amount" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal">
+      <div class="calc-display-wrap">
+        <div class="amount-prefix">S$</div>
+        <div class="calc-display" id="calc-display">0</div>
+        <div class="calc-expr-line" id="calc-expr"></div>
+      </div>
+      <input type="hidden" id="exp-amount">
+      <div class="calc-keypad" id="calc-keypad">
+        <button class="calc-key" data-k="7">7</button>
+        <button class="calc-key" data-k="8">8</button>
+        <button class="calc-key" data-k="9">9</button>
+        <button class="calc-key" data-k="⌫">⌫</button>
+        <button class="calc-key" data-k="4">4</button>
+        <button class="calc-key" data-k="5">5</button>
+        <button class="calc-key" data-k="6">6</button>
+        <button class="calc-key op" data-k="+">+</button>
+        <button class="calc-key" data-k="1">1</button>
+        <button class="calc-key" data-k="2">2</button>
+        <button class="calc-key" data-k="3">3</button>
+        <button class="calc-key op" data-k="-">−</button>
+        <button class="calc-key clr" data-k="C">C</button>
+        <button class="calc-key" data-k="0">0</button>
+        <button class="calc-key" data-k=".">.</button>
+        <button class="calc-key eq" data-k="=">=</button>
+      </div>
 
       <div class="form-group" style="margin-top:20px">
         <label class="form-label">📅 Date</label>
@@ -865,6 +910,10 @@ async function loadExpensesForView() {
 
 async function render() {
   await loadExpensesForView();
+  // Reload budgets on every render to ensure fresh data (fixes intermittent stale display)
+  const _budgets = await DB.getAll('budgets');
+  State.budgets = {};
+  _budgets.forEach(b => { State.budgets[b.id] = b; });
   updateDateLabel();
   if (State.view==='day') await renderDay();
   else if (State.view==='month') renderMonth();
@@ -1004,6 +1053,21 @@ async function renderDay() {
       render();
     });
   });
+
+  // Calendar swipe → previous/next month (issue 6)
+  const calWrap = el.querySelector('.cal-wrap');
+  if (calWrap) {
+    let _tx=0, _ty=0;
+    calWrap.addEventListener('touchstart', e=>{ _tx=e.touches[0].clientX; _ty=e.touches[0].clientY; },{passive:true});
+    calWrap.addEventListener('touchend', e=>{
+      const dx=e.changedTouches[0].clientX-_tx, dy=e.changedTouches[0].clientY-_ty;
+      if (Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.5) {
+        State.date.setDate(1); // avoid month-end overflow
+        State.date.setMonth(State.date.getMonth()+(dx<0?1:-1));
+        invalidateCalCache(); render();
+      }
+    },{passive:true});
+  }
 }
 
 function expenseItemHTML(e) {
@@ -1167,7 +1231,9 @@ async function renderGoals() {
   const budget = State.budgets[mk] || {};
   const mainCatBudgets = budget.mainCats || {};
   const thresholds = State.settings.catAlertThresholds || {};
-  const overall = budget.overall || 0;
+  // Issue 3: overall = user-set value OR auto-sum of category limits
+  const catSum = Object.values(mainCatBudgets).reduce((s,v)=>s+v,0);
+  const overall = budget.overall || catSum || 0;
   const totalSpent = Object.values(mainSpend).reduce((s,v)=>s+v, 0);
   const overallPct = overall ? Math.min((totalSpent/overall)*100,100) : 0;
   const overallClass = overallPct>90?'over':overallPct>70?'warn':'';
@@ -1283,7 +1349,7 @@ function renderSettings() {
     <div class="settings-block">
       <div class="settings-row" onclick="switchView('goals')">
         <span class="settings-row-icon">📊</span><span class="settings-row-label">Manage monthly budget</span>
-        <span class="settings-row-value">${State.budgets[State.currentMonthKey]?.overall?fmt.currency(State.budgets[State.currentMonthKey].overall):'Not set'}</span>
+        <span class="settings-row-value">${(()=>{const b=State.budgets[State.currentMonthKey];if(!b)return'Not set';if(b.overall)return fmt.currency(b.overall);const s=Object.values(b.mainCats||{}).reduce((a,v)=>a+v,0);return s>0?fmt.currency(s):'Not set';})()}</span>
         <span class="settings-row-arrow">›</span>
       </div>
     </div>
@@ -1675,7 +1741,7 @@ function openAddExpense() {
   State.selectedCategory = 'hawker'; State.selectedPayment = null;
   State.openMainCat = 'food'; State.payWiggleMode = false; State.payAddOpen = false; State.subWiggleMode = false;
   document.getElementById('expense-modal-title').textContent = 'Add Expense';
-  document.getElementById('exp-amount').value = '';
+  calcSet('');
   document.getElementById('exp-date').value = fmt.isoDate(State.date);
   document.getElementById('exp-note').value = '';
   document.getElementById('exp-tag-input').value = '';
@@ -1686,7 +1752,6 @@ function openAddExpense() {
   buildCatPicker();
   buildPayPicker();
   openModal('modal-expense');
-  setTimeout(() => document.getElementById('exp-amount').focus(), 350);
 }
 
 function openEditExpense(id) {
@@ -1696,7 +1761,7 @@ function openEditExpense(id) {
   State.selectedCategory = exp.category; State.selectedPayment = exp.paymentMethod||null;
   State.openMainCat = null; State.payWiggleMode = false; State.payAddOpen = false; State.subWiggleMode = false;
   document.getElementById('expense-modal-title').textContent = 'Edit Expense';
-  document.getElementById('exp-amount').value = exp.amount;
+  calcSet(exp.amount || '');
   document.getElementById('exp-date').value = exp.date;
   document.getElementById('exp-note').value = exp.note||'';
   document.getElementById('exp-tag-input').value = '';
@@ -1852,8 +1917,9 @@ document.getElementById('export-csv').addEventListener('click', async () => {
 
 document.getElementById('export-json').addEventListener('click', async () => {
   const exps=await getExportExpenses();
+  const [budgets,goals,settings]=await Promise.all([DB.getAll('budgets'),DB.getAll('goals'),DB.getAll('settings')]);
   downloadFile(`spendtrack-${new Date().toISOString().slice(0,10)}.json`,
-    JSON.stringify({exported:new Date().toISOString(),currency:'SGD',expenses:exps,categories:State.categories},null,2),'application/json');
+    JSON.stringify({exported:new Date().toISOString(),currency:'SGD',expenses:exps,categories:State.categories,budgets,goals,settings},null,2),'application/json');
   toast('JSON downloaded');
 });
 
@@ -1951,7 +2017,13 @@ window.importData = function() {
   const input=document.createElement('input'); input.type='file'; input.accept='.json';
   input.onchange=async e=>{ const file=e.target.files[0]; if(!file)return;
     try{ const data=JSON.parse(await file.text());
-      if(data.expenses){ for(const exp of data.expenses) await DB.put('expenses',exp); toast(`Imported ${data.expenses.length} expenses`); await render(); }
+      let count=0;
+      if(data.expenses){ for(const exp of data.expenses) await DB.put('expenses',exp); count=data.expenses.length; }
+      if(data.categories){ for(const cat of data.categories) await DB.put('categories',cat); }
+      if(data.budgets){ for(const b of data.budgets) await DB.put('budgets',b); }
+      if(data.goals){ for(const g of data.goals) await DB.put('goals',g); }
+      if(data.settings){ for(const s of data.settings) await DB.put('settings',s); }
+      toast(`Imported ${count} expenses + all settings`); await render();
     } catch{ toast('Failed to read file'); } };
   input.click();
 };
@@ -1971,7 +2043,7 @@ document.getElementById('receipt-gallery').addEventListener('click',()=>{ const 
 document.getElementById('receipt-cancel').addEventListener('click',()=>closeModal('modal-receipt'));
 document.getElementById('receipt-use').addEventListener('click',()=>{
   const amt=parseFloat(document.getElementById('receipt-confirm-amount').value);
-  if(amt>0) document.getElementById('exp-amount').value=amt.toFixed(2);
+  if(amt>0) calcSet(amt.toFixed(2));
   closeModal('modal-receipt');
 });
 document.getElementById('receipt-file-input').addEventListener('change',function(){
@@ -1998,9 +2070,29 @@ document.getElementById('btn-search-cancel').addEventListener('click',()=>{
   document.getElementById('filter-strip').style.display='none';
   State.searchQuery=''; State.filterCategory=null; render();
 });
-document.getElementById('search-input').addEventListener('input',function(){
-  State.searchQuery=this.value;
-  if(State.view!=='day') switchView('day'); else renderDay();
+document.getElementById('search-input').addEventListener('input', async function(){
+  State.searchQuery = this.value.trim();
+  if (State.searchQuery) {
+    // Search across ALL expenses regardless of current date view
+    const all = await DB.getAll('expenses');
+    const q = State.searchQuery.toLowerCase();
+    State.expenses = all.filter(e =>
+      (e.note||'').toLowerCase().includes(q) ||
+      getCat(e.category).name.toLowerCase().includes(q) ||
+      (e.tags||[]).some(t=>t.toLowerCase().includes(q))
+    ).sort((a,b)=>b.date.localeCompare(a.date));
+    // Switch to day view pane without resetting search state
+    if (State.view !== 'day') {
+      State.view='day';
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      document.getElementById('view-day').classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(btn=>btn.classList.toggle('active',btn.dataset.view==='day'));
+    }
+    renderDay();
+  } else {
+    await loadExpensesForView();
+    renderDay();
+  }
 });
 function showFilterStrip() {
   const strip=document.getElementById('filter-strip');
@@ -2019,6 +2111,10 @@ function showFilterStrip() {
 
 function switchView(view) {
   State.view=view;
+  // Close search bar when switching tabs (issue 5)
+  document.getElementById('search-bar').style.display='none';
+  document.getElementById('filter-strip').style.display='none';
+  State.searchQuery=''; State.filterCategory=null;
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById(`view-${view}`).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===view));
@@ -2070,10 +2166,119 @@ function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(overlay=>overlay.addEventListener('click',e=>{ if(e.target===overlay)overlay.classList.remove('open'); }));
 
 // ═══════════════════════════════════════
+// CALCULATOR ENGINE
+// ═══════════════════════════════════════
+
+let _calcExpr = '';
+
+function calcSafeEval(expr) {
+  const safe = expr.replace(/[^0-9+\-*/.]/g, '');
+  try {
+    const v = Function('"use strict";return(' + safe + ')')();
+    return isFinite(v) ? Math.round(v * 100) / 100 : null;
+  } catch(e) { return null; }
+}
+
+function calcUpdateDisplay() {
+  const display = document.getElementById('calc-display');
+  const exprLine = document.getElementById('calc-expr');
+  if (!display) return;
+  if (!_calcExpr) {
+    display.textContent = '0';
+    if (exprLine) exprLine.textContent = '';
+    return;
+  }
+  const val = calcSafeEval(_calcExpr);
+  if (exprLine) exprLine.textContent = _calcExpr;
+  display.textContent = val !== null ? val : _calcExpr;
+}
+
+function calcSet(val) {
+  _calcExpr = val ? String(val) : '';
+  calcUpdateDisplay();
+  const inp = document.getElementById('exp-amount');
+  if (inp) inp.value = val ? String(val) : '';
+}
+
+const _OPS = ['+', '-', '*', '/'];
+
+function calcKey(k) {
+  if (k === 'C') {
+    _calcExpr = '';
+    calcUpdateDisplay();
+    const inp = document.getElementById('exp-amount');
+    if (inp) inp.value = '';
+    return;
+  }
+  if (k === '⌫') {
+    _calcExpr = _calcExpr.slice(0, -1);
+    const val = calcSafeEval(_calcExpr);
+    const inp = document.getElementById('exp-amount');
+    if (inp) inp.value = (val !== null) ? val : '';
+    calcUpdateDisplay();
+    return;
+  }
+  if (k === '=') {
+    const val = calcSafeEval(_calcExpr);
+    if (val !== null) {
+      _calcExpr = String(val);
+      const inp = document.getElementById('exp-amount');
+      if (inp) inp.value = val;
+    }
+    calcUpdateDisplay();
+    return;
+  }
+  // Prevent double operators
+  if (_OPS.includes(k) && _OPS.includes(_calcExpr.slice(-1))) _calcExpr = _calcExpr.slice(0, -1);
+  // Prevent leading operator (except minus)
+  if (!_calcExpr && _OPS.includes(k) && k !== '-') return;
+  // Prevent double decimal in current number segment
+  if (k === '.') {
+    const seg = _calcExpr.split(/[+\-*/]/).pop();
+    if (seg.includes('.')) return;
+  }
+  _calcExpr += k;
+  const val = calcSafeEval(_calcExpr);
+  const inp = document.getElementById('exp-amount');
+  if (val !== null && !_OPS.includes(k) && inp) inp.value = val;
+  calcUpdateDisplay();
+}
+
+document.getElementById('calc-keypad').addEventListener('click', e => {
+  const btn = e.target.closest('.calc-key');
+  if (btn) calcKey(btn.dataset.k);
+});
+
+// ═══════════════════════════════════════
+// THEME TOGGLE
+// ═══════════════════════════════════════
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('btn-theme');
+  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  try { localStorage.setItem('spendtrack-theme', theme); } catch(e) {}
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+document.getElementById('btn-theme').addEventListener('click', toggleTheme);
+
+// ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
 
 async function init() {
+  // Restore saved theme (or match system preference)
+  try {
+    const saved = localStorage.getItem('spendtrack-theme');
+    if (saved) applyTheme(saved);
+    else if (window.matchMedia('(prefers-color-scheme: dark)').matches) applyTheme('dark');
+    else applyTheme('light');
+  } catch(e) { applyTheme('light'); }
   try {
     await DB.init();
     await loadAll();
