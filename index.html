@@ -34,8 +34,13 @@ html[data-theme="light"]{--teal:#C05C2A;--teal-dark:#7A3010;--teal-light:#FAEEE6
   --text:#1A1510;--text2:#6B6460;--text3:#B0A89E;--shadow:0 2px 16px rgba(0,0,0,0.06);}
 /* CALCULATOR KEYPAD */
 .calc-display-wrap{text-align:center;padding:8px 16px 2px}
-.calc-expr-line{font-size:13px;color:var(--text2);min-height:18px;word-break:break-all;margin-bottom:2px}
+.calc-expr-line{font-size:13px;color:var(--text2);min-height:18px;word-break:break-all;margin-bottom:4px}
 .calc-display{font-size:42px;font-weight:700;color:var(--text);line-height:1.1;min-height:50px}
+/* SEARCH OVERLAY */
+#search-overlay{display:none;position:fixed;inset:0;padding-top:calc(var(--safe-top) + 0px);z-index:50;background:var(--bg);flex-direction:column}
+#search-overlay.open{display:flex}
+#search-overlay-header{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface);border-bottom:.5px solid var(--border);flex-shrink:0}
+#search-results{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--nav-h) + var(--safe-bot) + 40px)}
 .calc-keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:6px 16px 14px}
 .calc-key{background:var(--surface2);border:none;border-radius:var(--radius-sm);font-size:22px;font-weight:600;
   color:var(--text);padding:0;height:54px;cursor:pointer;display:flex;align-items:center;justify-content:center;
@@ -368,13 +373,18 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
     </button>
   </div>
 
-  <div id="filter-strip" class="filter-strip" style="display:none"></div>
-  <div id="search-bar" class="search-bar" style="display:none">
-    <div class="search-input-wrap">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input class="search-input" id="search-input" type="search" placeholder="Search expenses…" autocomplete="off">
-      <button style="background:none;border:none;color:var(--teal);font-size:14px;cursor:pointer" id="btn-search-cancel">Cancel</button>
+  <!-- SEARCH OVERLAY -->
+  <div id="search-overlay">
+    <div id="search-overlay-header">
+      <div class="search-input-wrap" style="flex:1">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" id="search-input" type="search" placeholder="Search expenses…" autocomplete="off" inputmode="search">
+        <button id="btn-search-clear" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;display:none;line-height:1;padding:0 2px">✕</button>
+      </div>
+      <button id="btn-search-cancel" style="background:none;border:none;color:var(--teal);font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap">Cancel</button>
     </div>
+    <div id="search-filter-strip" class="filter-strip"></div>
+    <div id="search-results"></div>
   </div>
 
   <div id="main">
@@ -417,9 +427,8 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
     </div>
     <div class="modal-body">
       <div class="calc-display-wrap">
-        <div class="amount-prefix">S$</div>
-        <div class="calc-display" id="calc-display">0</div>
         <div class="calc-expr-line" id="calc-expr"></div>
+        <div class="calc-display" id="calc-display">0</div>
       </div>
       <input type="hidden" id="exp-amount">
       <div class="calc-keypad" id="calc-keypad">
@@ -1055,12 +1064,17 @@ async function renderDay() {
   });
 
   // Calendar swipe → previous/next month (issue 6)
+  // stopPropagation() prevents the global #main swipe handler from also firing
   const calWrap = el.querySelector('.cal-wrap');
   if (calWrap) {
-    let _tx=0, _ty=0;
-    calWrap.addEventListener('touchstart', e=>{ _tx=e.touches[0].clientX; _ty=e.touches[0].clientY; },{passive:true});
+    let _cTx=0, _cTy=0;
+    calWrap.addEventListener('touchstart', e=>{
+      _cTx=e.touches[0].clientX; _cTy=e.touches[0].clientY;
+      e.stopPropagation();
+    },{passive:true});
     calWrap.addEventListener('touchend', e=>{
-      const dx=e.changedTouches[0].clientX-_tx, dy=e.changedTouches[0].clientY-_ty;
+      e.stopPropagation();
+      const dx=e.changedTouches[0].clientX-_cTx, dy=e.changedTouches[0].clientY-_cTy;
       if (Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.5) {
         State.date.setDate(1); // avoid month-end overflow
         State.date.setMonth(State.date.getMonth()+(dx<0?1:-1));
@@ -1754,8 +1768,10 @@ function openAddExpense() {
   openModal('modal-expense');
 }
 
-function openEditExpense(id) {
-  const exp = State.expenses.find(e=>e.id===id); if(!exp)return;
+async function openEditExpense(id) {
+  let exp = State.expenses.find(e=>e.id===id);
+  if (!exp) exp = await DB.get('expenses', id);
+  if (!exp) return;
   State.editingExpenseId = id;
   State.expTags = [...(exp.tags||[])]; State.gstOn = !!exp.gst; State.recurringOn = !!exp.recurring;
   State.selectedCategory = exp.category; State.selectedPayment = exp.paymentMethod||null;
@@ -1813,8 +1829,12 @@ async function saveExpense() {
   };
   await DB.put('expenses',exp);
   invalidateCalCache();
+  const wasEditing = State.editingExpenseId;
   closeModal('modal-expense'); await updateStreak(); await render();
-  toast(State.editingExpenseId?'Updated!':getCat(exp.category).icon+' Saved!');
+  if (document.getElementById('search-overlay').classList.contains('open')) {
+    renderSearchResults(State.searchQuery);
+  }
+  toast(wasEditing?'Updated!':getCat(exp.category).icon+' Saved!');
   checkBudgetAlerts(exp);
 }
 
@@ -2056,54 +2076,83 @@ document.getElementById('receipt-file-input').addEventListener('change',function
 });
 
 // ═══════════════════════════════════════
-// SEARCH
+// SEARCH OVERLAY
 // ═══════════════════════════════════════
 
-document.getElementById('btn-search').addEventListener('click',()=>{
-  const bar=document.getElementById('search-bar'), isOpen=bar.style.display!=='none';
-  bar.style.display=isOpen?'none':'block';
-  if(!isOpen){ document.getElementById('search-input').focus(); showFilterStrip(); }
-  else{ State.searchQuery=''; State.filterCategory=null; document.getElementById('filter-strip').style.display='none'; render(); }
-});
-document.getElementById('btn-search-cancel').addEventListener('click',()=>{
-  document.getElementById('search-bar').style.display='none';
-  document.getElementById('filter-strip').style.display='none';
-  State.searchQuery=''; State.filterCategory=null; render();
-});
-document.getElementById('search-input').addEventListener('input', async function(){
-  State.searchQuery = this.value.trim();
-  if (State.searchQuery) {
-    // Search across ALL expenses regardless of current date view
-    const all = await DB.getAll('expenses');
-    const q = State.searchQuery.toLowerCase();
-    State.expenses = all.filter(e =>
-      (e.note||'').toLowerCase().includes(q) ||
-      getCat(e.category).name.toLowerCase().includes(q) ||
-      (e.tags||[]).some(t=>t.toLowerCase().includes(q))
-    ).sort((a,b)=>b.date.localeCompare(a.date));
-    // Switch to day view pane without resetting search state
-    if (State.view !== 'day') {
-      State.view='day';
-      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-      document.getElementById('view-day').classList.add('active');
-      document.querySelectorAll('.nav-item').forEach(btn=>btn.classList.toggle('active',btn.dataset.view==='day'));
-    }
-    renderDay();
-  } else {
-    await loadExpensesForView();
-    renderDay();
-  }
-});
-function showFilterStrip() {
-  const strip=document.getElementById('filter-strip');
-  strip.style.display='flex';
-  strip.innerHTML=`<div class="filter-chip ${!State.filterCategory?'active':''}" data-cat="">All</div>`+
-    State.categories.map(c=>`<div class="filter-chip ${State.filterCategory===c.id?'active':''}" data-cat="${c.id}">${c.icon} ${c.name}</div>`).join('');
-  strip.querySelectorAll('.filter-chip').forEach(chip=>chip.addEventListener('click',()=>{
-    State.filterCategory=chip.dataset.cat||null; showFilterStrip();
-    if(State.view!=='day') switchView('day'); else renderDay();
+function openSearch() {
+  document.getElementById('search-overlay').classList.add('open');
+  const inp = document.getElementById('search-input');
+  inp.value = '';
+  document.getElementById('btn-search-clear').style.display = 'none';
+  State.searchQuery = '';
+  State.filterCategory = null;
+  renderSearchFilters();
+  renderSearchResults('');
+  // Slight delay so overlay paints before keyboard opens
+  setTimeout(() => inp.focus(), 80);
+}
+
+function closeSearch() {
+  document.getElementById('search-overlay').classList.remove('open');
+  State.searchQuery = '';
+  State.filterCategory = null;
+}
+
+function renderSearchFilters() {
+  const strip = document.getElementById('search-filter-strip');
+  strip.innerHTML = `<div class="filter-chip ${!State.filterCategory?'active':''}" data-cat="">All</div>` +
+    State.categories.map(c => `<div class="filter-chip ${State.filterCategory===c.id?'active':''}" data-cat="${c.id}">${c.icon} ${c.name}</div>`).join('');
+  strip.querySelectorAll('.filter-chip').forEach(chip => chip.addEventListener('click', () => {
+    State.filterCategory = chip.dataset.cat || null;
+    renderSearchFilters();
+    renderSearchResults(State.searchQuery);
   }));
 }
+
+async function renderSearchResults(query) {
+  State.searchQuery = query;
+  const el = document.getElementById('search-results');
+  const all = await DB.getAll('expenses');
+  let results = all;
+  if (query) {
+    const q = query.toLowerCase();
+    results = results.filter(e =>
+      (e.note||'').toLowerCase().includes(q) ||
+      getCat(e.category).name.toLowerCase().includes(q) ||
+      (e.tags||[]).some(t => t.toLowerCase().includes(q))
+    );
+  }
+  if (State.filterCategory) results = results.filter(e => e.category === State.filterCategory);
+  results = results.sort((a, b) => b.date.localeCompare(a.date));
+  if (!results.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><h3>${query ? 'No results' : 'Start typing to search'}</h3><p>${query ? 'Try a different keyword or category.' : 'Search by note, category, or tag.'}</p></div>`;
+    return;
+  }
+  // Group by date
+  const byDate = {};
+  results.forEach(e => { if (!byDate[e.date]) byDate[e.date]=[]; byDate[e.date].push(e); });
+  let html = `<div style="padding:8px 16px 2px;font-size:12px;color:var(--text3)">${results.length} result${results.length!==1?'s':''}</div>`;
+  Object.keys(byDate).sort((a,b)=>b.localeCompare(a)).forEach(date => {
+    html += `<div class="section-header">${fmt.date(date)}</div>`;
+    html += byDate[date].map(e => expenseItemHTML(e)).join('');
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.expense-item').forEach(item => item.addEventListener('click', () => openEditExpense(item.dataset.id)));
+}
+
+document.getElementById('btn-search').addEventListener('click', openSearch);
+document.getElementById('btn-search-cancel').addEventListener('click', closeSearch);
+document.getElementById('btn-search-clear').addEventListener('click', () => {
+  document.getElementById('search-input').value = '';
+  document.getElementById('btn-search-clear').style.display = 'none';
+  renderSearchResults('');
+  document.getElementById('search-input').focus();
+});
+document.getElementById('search-input').addEventListener('input', function() {
+  const q = this.value.trim();
+  document.getElementById('btn-search-clear').style.display = q ? 'block' : 'none';
+  renderSearchResults(q);
+});
 
 // ═══════════════════════════════════════
 // NAVIGATION
@@ -2111,10 +2160,7 @@ function showFilterStrip() {
 
 function switchView(view) {
   State.view=view;
-  // Close search bar when switching tabs (issue 5)
-  document.getElementById('search-bar').style.display='none';
-  document.getElementById('filter-strip').style.display='none';
-  State.searchQuery=''; State.filterCategory=null;
+  closeSearch();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById(`view-${view}`).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===view));
@@ -2184,13 +2230,16 @@ function calcUpdateDisplay() {
   const exprLine = document.getElementById('calc-expr');
   if (!display) return;
   if (!_calcExpr) {
-    display.textContent = '0';
     if (exprLine) exprLine.textContent = '';
+    display.textContent = '0';
     return;
   }
-  const val = calcSafeEval(_calcExpr);
+  // Small line: full expression including any trailing operator
   if (exprLine) exprLine.textContent = _calcExpr;
-  display.textContent = val !== null ? val : _calcExpr;
+  // Big display: always numeric — trim trailing operators before evaluating
+  const trimmed = _calcExpr.replace(/[+\-*/]+$/, '');
+  const val = trimmed ? calcSafeEval(trimmed) : null;
+  display.textContent = val !== null ? val : '0';
 }
 
 function calcSet(val) {
