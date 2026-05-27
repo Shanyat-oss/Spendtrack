@@ -1066,20 +1066,18 @@ async function renderDay() {
     });
   });
 
-  // Calendar swipe → previous/next month (issue 6)
-  // stopPropagation() prevents the global #main swipe handler from also firing
+  // Calendar swipe → previous/next month
+  // Global #main handler checks _touchInCal and skips; no stopPropagation needed
   const calWrap = el.querySelector('.cal-wrap');
   if (calWrap) {
     let _cTx=0, _cTy=0;
     calWrap.addEventListener('touchstart', e=>{
       _cTx=e.touches[0].clientX; _cTy=e.touches[0].clientY;
-      e.stopPropagation();
     },{passive:true});
     calWrap.addEventListener('touchend', e=>{
-      e.stopPropagation();
       const dx=e.changedTouches[0].clientX-_cTx, dy=e.changedTouches[0].clientY-_cTy;
-      if (Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.5) {
-        State.date.setDate(1); // avoid month-end overflow
+      if (Math.abs(dx)>40 && Math.abs(dx)>Math.abs(dy)*1.5) {
+        State.date.setDate(1);
         State.date.setMonth(State.date.getMonth()+(dx<0?1:-1));
         invalidateCalCache(); render();
       }
@@ -2262,10 +2260,15 @@ document.getElementById('btn-next').addEventListener('click',()=>{
 });
 document.getElementById('date-label').addEventListener('click',()=>{ if(State.view==='day'){ State.date=new Date(); render(); } });
 
-// Swipe
-let _tx=0;
-document.getElementById('main').addEventListener('touchstart',e=>{_tx=e.touches[0].clientX;},{passive:true});
+// Swipe — global handler for day/month/year navigation
+// _touchInCal: touch started inside the calendar widget → let the calendar handle it, skip day nav
+let _tx=0, _touchInCal=false;
+document.getElementById('main').addEventListener('touchstart',e=>{
+  _tx=e.touches[0].clientX;
+  _touchInCal = !!e.target.closest('.cal-wrap');
+},{passive:true});
 document.getElementById('main').addEventListener('touchend',e=>{
+  if(_touchInCal) return; // calendar's own handler takes over
   const dx=e.changedTouches[0].clientX-_tx; if(Math.abs(dx)<60)return;
   if(!['day','month','year'].includes(State.view))return;
   const d=State.date;
