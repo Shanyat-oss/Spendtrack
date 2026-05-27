@@ -605,6 +605,9 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
         <button class="btn-sm btn-primary" id="export-ai" style="padding:13px">🤖 Export for AI (Claude)</button>
         <button class="btn-sm btn-primary" id="export-pdf" style="padding:13px">📄 Download PDF Report</button>
       </div>
+      <div style="border-top:.5px solid var(--border);margin:4px 0 10px"></div>
+      <button class="btn-sm btn-ghost" id="import-json-btn" style="padding:13px;border:1.5px dashed var(--border)">📥 Restore from JSON backup</button>
+      <input type="file" id="import-json-input" accept=".json" style="display:none">
       <div style="background:var(--amber-light);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px">
         <div style="font-size:12px;font-weight:600;color:var(--amber);margin-bottom:4px">🤖 Claude Cowork Auto-export</div>
         <div style="font-size:12px;color:var(--text2);line-height:1.5">Schedule automatic JSON exports via Claude Cowork — see INSTALL.md for setup.</div>
@@ -1941,6 +1944,75 @@ document.getElementById('export-json').addEventListener('click', async () => {
   downloadFile(`spendtrack-${new Date().toISOString().slice(0,10)}.json`,
     JSON.stringify({exported:new Date().toISOString(),currency:'SGD',expenses:exps,categories:State.categories,budgets,goals,settings},null,2),'application/json');
   toast('JSON downloaded');
+});
+
+// ── IMPORT ──
+async function clearStore(storeName) {
+  return new Promise((res, rej) => {
+    const tx = DB._tx(storeName, 'readwrite');
+    tx.objectStore(storeName).clear().onsuccess = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+}
+
+document.getElementById('import-json-btn').addEventListener('click', () => {
+  document.getElementById('import-json-input').click();
+});
+
+document.getElementById('import-json-input').addEventListener('change', async function() {
+  const file = this.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!data.expenses || !Array.isArray(data.expenses)) {
+      toast('Invalid backup file — not a SpendTrack JSON'); this.value=''; return;
+    }
+    const count = data.expenses.length;
+    const dateStr = data.exported
+      ? new Date(data.exported).toLocaleDateString('en-SG', {day:'numeric',month:'short',year:'numeric'})
+      : 'unknown date';
+    const ok = confirm(
+      `Restore from backup?\n\n` +
+      `• ${count} expenses (exported ${dateStr})\n` +
+      `• Categories, budgets and goals will also be restored\n\n` +
+      `⚠️ This replaces ALL current data. Cannot be undone.`
+    );
+    if (!ok) { this.value=''; return; }
+
+    // Replace expenses
+    await clearStore('expenses');
+    for (const e of data.expenses) await DB.put('expenses', e);
+
+    // Replace categories (if present)
+    if (Array.isArray(data.categories) && data.categories.length) {
+      await clearStore('categories');
+      for (const c of data.categories) await DB.put('categories', c);
+    }
+
+    // Replace budgets (if present)
+    if (Array.isArray(data.budgets) && data.budgets.length) {
+      await clearStore('budgets');
+      for (const b of data.budgets) await DB.put('budgets', b);
+    }
+
+    // Replace goals (if present)
+    if (Array.isArray(data.goals) && data.goals.length) {
+      await clearStore('goals');
+      for (const g of data.goals) await DB.put('goals', g);
+    }
+
+    // Note: settings (streak, theme) intentionally NOT imported — device-specific
+
+    await loadAll();
+    invalidateCalCache();
+    closeModal('modal-export');
+    await render();
+    toast(`✅ Restored ${count} expenses`);
+  } catch(err) {
+    toast('Import failed: ' + err.message);
+  }
+  this.value = '';
 });
 
 document.getElementById('export-ai').addEventListener('click', async () => {
