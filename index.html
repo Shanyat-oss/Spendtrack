@@ -53,7 +53,6 @@ html[data-theme="light"]{--teal:#C05C2A;--teal-dark:#7A3010;--teal-light:#FAEEE6
 @media all and (display-mode:standalone){
   :root{
     --safe-top:max(env(safe-area-inset-top,44px),44px);
-    --safe-bot:max(env(safe-area-inset-bottom,20px),20px);
   }
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -70,9 +69,6 @@ body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'S
 .header-btn{background:none;border:none;color:var(--teal);font-size:22px;width:36px;height:36px;
   display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;transition:background .15s}
 .header-btn:active{background:var(--teal-light)}
-#streak-badge{display:flex;align-items:center;gap:4px;background:var(--amber-light);color:var(--amber);
-  border-radius:20px;padding:3px 8px;font-size:12px;font-weight:600}
-
 /* DATE NAV */
 #date-nav{background:var(--surface);display:flex;align-items:center;justify-content:space-between;
   padding:8px 16px;border-bottom:.5px solid var(--border);flex-shrink:0}
@@ -83,7 +79,7 @@ body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'S
 #date-label:active{background:var(--teal-light)}
 
 /* MAIN */
-#main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
+#main{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   padding-bottom:calc(var(--nav-h) + var(--safe-bot) + 80px)}
 
 /* BOTTOM NAV */
@@ -145,6 +141,11 @@ body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'S
 .cal-wrap{background:var(--surface);margin:12px 16px 4px;border-radius:var(--radius);padding:12px;box-shadow:var(--shadow)}
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .cal-month-label{font-size:13px;font-weight:700;color:var(--text)}
+.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:6px}
+.cal-track-clip{overflow:hidden}
+.cal-track{display:flex;width:300%}
+.cal-track.cal-snap{transition:transform .32s cubic-bezier(.22,.61,.36,1)}
+.cal-panel{flex:0 0 33.3334%;min-width:0}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .cal-dow{font-size:10px;font-weight:600;color:var(--text3);text-align:center;padding:2px 0 4px}
 .cal-cell{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
@@ -357,10 +358,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
       </svg>
     </button>
     <span id="header-title">SpendTrack</span>
-    <div style="display:flex;align-items:center;gap:6px">
-      <button class="header-btn" id="btn-theme" aria-label="Toggle theme" style="font-size:18px">🌙</button>
-      <div id="streak-badge">🔥 <span id="streak-count">0</span></div>
-    </div>
+    <button class="header-btn" id="btn-theme" aria-label="Toggle theme" style="font-size:18px">☀️</button>
   </div>
 
   <div id="date-nav">
@@ -764,7 +762,7 @@ const State = {
   categories: [],
   budgets: {},
   goals: [],
-  settings: { streakLastDate:null, streakCount:0, paymentMethods:null },
+  settings: { paymentMethods:null },
   editingExpenseId: null,
   editingGoalId: null,
   expTags: [],
@@ -839,21 +837,6 @@ function addLongPress(el, cb, ms=500) {
   el.addEventListener('mousedown', ()=>{ moved=false; timer=setTimeout(()=>{ if(!moved)cb(); }, ms); });
   el.addEventListener('mousemove', ()=>{ moved=true; clearTimeout(timer); });
   el.addEventListener('mouseup', ()=>clearTimeout(timer));
-}
-
-// ═══════════════════════════════════════
-// STREAK
-// ═══════════════════════════════════════
-
-async function updateStreak() {
-  const today = fmt.isoDate(new Date());
-  const s = State.settings;
-  if (s.streakLastDate === today) return;
-  const yesterday = fmt.isoDate(new Date(Date.now()-86400000));
-  s.streakCount = s.streakLastDate===yesterday ? (s.streakCount||0)+1 : 1;
-  s.streakLastDate = today;
-  await saveSettings();
-  document.getElementById('streak-count').textContent = s.streakCount;
 }
 
 async function saveSettings() {
@@ -973,20 +956,16 @@ async function loadDayTotals() {
 
 function invalidateCalCache() { State.calMonth = null; }
 
-function renderCalendar() {
-  const d = State.date;
+function buildMonthGrid(year, month, showAmounts) {
   const today = fmt.isoDate(new Date());
-  const selIso = fmt.isoDate(d);
-  const year = d.getFullYear(), month = d.getMonth();
+  const selIso = fmt.isoDate(State.date);
   const firstDow = new Date(year, month, 1).getDay(); // 0=Sun
   // Convert to Mon-first: Sun→6, Mon→0
   const startOffset = (firstDow + 6) % 7;
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const daysInPrev = new Date(year, month, 0).getDate();
-  const DOW_LABELS = ['M','T','W','T','F','S','S'];
 
   let cells = '';
-  let dayCount = 0;
 
   // leading cells from prev month
   for (let i=0; i<startOffset; i++) {
@@ -997,13 +976,12 @@ function renderCalendar() {
     const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
     const isToday = iso===today;
     const isSelected = iso===selIso;
-    const total = State.dayTotals[iso];
+    const total = showAmounts ? State.dayTotals[iso] : null;
     const amtHtml = total ? `<div class="cal-amt">${fmt.currencyShort(total)}</div>` : '';
     cells += `<div class="cal-cell ${isToday?'today':''} ${isSelected?'selected':''}" data-iso="${iso}">
       <div class="cal-day-num">${day}</div>
       ${amtHtml}
     </div>`;
-    dayCount++;
   }
   // trailing cells
   const totalCells = startOffset + daysInMonth;
@@ -1012,10 +990,24 @@ function renderCalendar() {
     cells += `<div class="cal-cell other-month"><div class="cal-day-num">${i}</div></div>`;
   }
 
+  return `<div class="cal-grid">${cells}</div>`;
+}
+
+function renderCalendar() {
+  const d = State.date;
+  const year = d.getFullYear(), month = d.getMonth();
+  const prev = new Date(year, month-1, 1);
+  const next = new Date(year, month+1, 1);
+  const DOW_LABELS = ['M','T','W','T','F','S','S'];
+
   return `<div class="cal-wrap">
-    <div class="cal-grid">
-      ${DOW_LABELS.map(l=>`<div class="cal-dow">${l}</div>`).join('')}
-      ${cells}
+    <div class="cal-dow-row">${DOW_LABELS.map(l=>`<div class="cal-dow">${l}</div>`).join('')}</div>
+    <div class="cal-track-clip">
+      <div class="cal-track">
+        <div class="cal-panel">${buildMonthGrid(prev.getFullYear(), prev.getMonth(), false)}</div>
+        <div class="cal-panel">${buildMonthGrid(year, month, true)}</div>
+        <div class="cal-panel">${buildMonthGrid(next.getFullYear(), next.getMonth(), false)}</div>
+      </div>
     </div>
   </div>`;
 }
@@ -1066,21 +1058,52 @@ async function renderDay() {
     });
   });
 
-  // Calendar swipe → previous/next month
+  // Calendar swipe → animated month paging (iOS-style finger tracking)
   // Global #main handler checks _touchInCal and skips; no stopPropagation needed
   const calWrap = el.querySelector('.cal-wrap');
-  if (calWrap) {
-    let _cTx=0, _cTy=0;
+  const calTrack = el.querySelector('.cal-track');
+  if (calWrap && calTrack) {
+    const w = calWrap.getBoundingClientRect().width;
+    let startX=0, startY=0, dx=0, dragging=false, locked=null, animating=false;
+    const setX = (px, snap) => {
+      calTrack.classList.toggle('cal-snap', !!snap);
+      calTrack.style.transform = `translate3d(${px}px,0,0)`;
+    };
+    setX(-w, false);
     calWrap.addEventListener('touchstart', e=>{
-      _cTx=e.touches[0].clientX; _cTy=e.touches[0].clientY;
+      if (animating) return;
+      startX=e.touches[0].clientX; startY=e.touches[0].clientY; dx=0; dragging=false; locked=null;
+      setX(-w, false);
     },{passive:true});
-    calWrap.addEventListener('touchend', e=>{
-      const dx=e.changedTouches[0].clientX-_cTx, dy=e.changedTouches[0].clientY-_cTy;
-      if (Math.abs(dx)>40 && Math.abs(dx)>Math.abs(dy)*1.5) {
-        State.date.setDate(1);
-        State.date.setMonth(State.date.getMonth()+(dx<0?1:-1));
-        invalidateCalCache(); render();
+    calWrap.addEventListener('touchmove', e=>{
+      if (animating) return;
+      const cx=e.touches[0].clientX, cy=e.touches[0].clientY;
+      const ddx=cx-startX, ddy=cy-startY;
+      if (locked===null && (Math.abs(ddx)>8 || Math.abs(ddy)>8)) {
+        locked = Math.abs(ddx) > Math.abs(ddy)*1.2 ? 'x' : 'y';
       }
+      if (locked==='x') { dragging=true; dx=ddx; setX(-w+dx, false); }
+    },{passive:true});
+    calWrap.addEventListener('touchend', () => {
+      if (animating) return;
+      if (!dragging) { setX(-w, false); locked=null; return; }
+      const threshold = w*0.22;
+      if (dx<=-threshold || dx>=threshold) {
+        const dir = dx<0 ? 1 : -1; // 1=next month, -1=prev month
+        animating = true;
+        setX(-w - dir*w, true);
+        calTrack.addEventListener('transitionend', function done(){
+          calTrack.removeEventListener('transitionend', done);
+          State.date.setDate(1);
+          State.date.setMonth(State.date.getMonth()+dir);
+          invalidateCalCache();
+          animating = false;
+          render();
+        }, {once:true});
+      } else {
+        setX(-w, true);
+      }
+      dragging=false; dx=0; locked=null;
     },{passive:true});
   }
 }
@@ -1352,12 +1375,10 @@ async function renderGoals() {
 
 function renderSettings() {
   const el = document.getElementById('view-settings');
-  const streak = State.settings.streakCount||0;
   el.innerHTML = `
   <div style="padding:20px 16px 8px;text-align:center">
     <div style="font-size:48px;margin-bottom:4px">💰</div>
     <div style="font-size:22px;font-weight:700">SpendTrack</div>
-    <div style="font-size:14px;color:var(--text2)">🔥 ${streak}-day streak</div>
   </div>
   <div class="settings-section">
     <div class="settings-section-title">Budget</div>
@@ -1390,7 +1411,7 @@ function renderSettings() {
         <span class="settings-row-icon">📤</span><span class="settings-row-label">Export data</span>
         <span class="settings-row-value">CSV · PDF · JSON</span><span class="settings-row-arrow">›</span>
       </div>
-      <div class="settings-row" onclick="importData()">
+      <div class="settings-row" onclick="document.getElementById('import-json-input').click()">
         <span class="settings-row-icon">📥</span><span class="settings-row-label">Import from JSON</span><span class="settings-row-arrow">›</span>
       </div>
       <div class="settings-row" onclick="clearAllData()">
@@ -1812,7 +1833,7 @@ document.getElementById('btn-delete-expense').addEventListener('click', async ()
   if(!confirm('Delete this expense?'))return;
   await DB.delete('expenses',State.editingExpenseId);
   invalidateCalCache();
-  closeModal('modal-expense'); await updateStreak(); await render(); toast('Expense deleted');
+  closeModal('modal-expense'); await render(); toast('Expense deleted');
 });
 document.getElementById('btn-receipt').addEventListener('click', () => openModal('modal-receipt'));
 
@@ -1831,7 +1852,7 @@ async function saveExpense() {
   await DB.put('expenses',exp);
   invalidateCalCache();
   const wasEditing = State.editingExpenseId;
-  closeModal('modal-expense'); await updateStreak(); await render();
+  closeModal('modal-expense'); await render();
   if (document.getElementById('search-overlay').classList.contains('open')) {
     renderSearchResults(State.searchQuery);
   }
@@ -2000,7 +2021,7 @@ document.getElementById('import-json-input').addEventListener('change', async fu
       for (const g of data.goals) await DB.put('goals', g);
     }
 
-    // Note: settings (streak, theme) intentionally NOT imported — device-specific
+    // Note: settings (theme, payment methods) intentionally NOT imported — device-specific
 
     await loadAll();
     invalidateCalCache();
@@ -2102,21 +2123,6 @@ document.getElementById('export-pdf').addEventListener('click', async () => {
 function downloadFile(name, content, type) {
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([content],{type})); a.download=name; a.click(); URL.revokeObjectURL(a.href);
 }
-
-window.importData = function() {
-  const input=document.createElement('input'); input.type='file'; input.accept='.json';
-  input.onchange=async e=>{ const file=e.target.files[0]; if(!file)return;
-    try{ const data=JSON.parse(await file.text());
-      let count=0;
-      if(data.expenses){ for(const exp of data.expenses) await DB.put('expenses',exp); count=data.expenses.length; }
-      if(data.categories){ for(const cat of data.categories) await DB.put('categories',cat); }
-      if(data.budgets){ for(const b of data.budgets) await DB.put('budgets',b); }
-      if(data.goals){ for(const g of data.goals) await DB.put('goals',g); }
-      if(data.settings){ for(const s of data.settings) await DB.put('settings',s); }
-      toast(`Imported ${count} expenses + all settings`); await render();
-    } catch{ toast('Failed to read file'); } };
-  input.click();
-};
 
 window.clearAllData = async function() {
   if(!confirm('Delete ALL expenses, goals and settings? This cannot be undone.'))return;
@@ -2380,7 +2386,7 @@ document.getElementById('calc-keypad').addEventListener('click', e => {
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   const btn = document.getElementById('btn-theme');
-  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  if (btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️';
   try { localStorage.setItem('spendtrack-theme', theme); } catch(e) {}
 }
 
@@ -2407,7 +2413,6 @@ async function init() {
     await DB.init();
     await loadAll();
     await ensureRecurring();
-    document.getElementById('streak-count').textContent = State.settings.streakCount||0;
     await render();
     if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
   } catch(err) {
