@@ -80,7 +80,7 @@ body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'S
 
 /* MAIN */
 #main{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
-  padding-bottom:calc(var(--nav-h) + var(--safe-bot) + 80px)}
+  padding-bottom:calc(var(--nav-h) + var(--safe-bot) + 12px)}
 
 /* BOTTOM NAV */
 #bottom-nav{background:var(--surface);border-top:.5px solid var(--border);
@@ -90,13 +90,14 @@ body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'S
   transition:color .15s;font-size:10px;font-weight:500;min-height:var(--nav-h)}
 .nav-item.active{color:var(--teal)}
 .nav-item svg{width:24px;height:24px}
+.nav-fab-spacer{flex:1}
 
 /* FAB */
-#fab{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bot) + 16px);right:20px;
-  width:56px;height:56px;background:var(--teal);color:#fff;border:none;border-radius:50%;
-  font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;
+#fab{position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+  width:58px;height:58px;background:var(--teal);color:#fff;border:4px solid var(--surface);border-radius:50%;
+  font-size:28px;line-height:1;display:flex;align-items:center;justify-content:center;
   box-shadow:0 4px 16px rgba(192,92,42,.35);cursor:pointer;z-index:20;transition:transform .15s,box-shadow .15s}
-#fab:active{transform:scale(.93)}
+#fab:active{transform:translateX(-50%) scale(.93)}
 
 /* SUMMARY */
 .summary-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px 4px}
@@ -138,26 +139,26 @@ body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'S
 .trend-wrap{height:140px;position:relative;margin-top:8px}
 
 /* CALENDAR */
-.cal-wrap{background:var(--surface);margin:12px 16px 4px;border-radius:var(--radius);padding:12px;box-shadow:var(--shadow)}
+.cal-wrap{background:var(--surface);margin:12px 16px 4px;border-radius:var(--radius);padding:10px;box-shadow:var(--shadow)}
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .cal-month-label{font-size:13px;font-weight:700;color:var(--text)}
-.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:6px}
+.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
 .cal-track-clip{overflow:hidden}
 .cal-track{display:flex;width:300%}
 .cal-track.cal-snap{transition:transform .32s cubic-bezier(.22,.61,.36,1)}
 .cal-panel{flex:0 0 33.3334%;min-width:0}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .cal-dow{font-size:10px;font-weight:600;color:var(--text3);text-align:center;padding:2px 0 4px}
-.cal-cell{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-  padding:4px 2px 3px;border-radius:8px;cursor:pointer;min-height:44px;transition:background .12s;position:relative}
+.cal-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:4px 2px 3px;border-radius:8px;cursor:pointer;min-height:56px;transition:background .12s;position:relative}
 .cal-cell:active{background:var(--teal-light)}
 .cal-cell.other-month{opacity:.25;pointer-events:none}
 .cal-cell.today .cal-day-num{font-weight:800;color:var(--teal)}
 .cal-cell.selected{background:var(--teal)}
 .cal-cell.selected .cal-day-num{color:white;font-weight:700}
-.cal-cell.selected .cal-amt{color:rgba(255,255,255,.85)}
-.cal-day-num{font-size:13px;font-weight:500;color:var(--text);position:relative}
-.cal-amt{font-size:11px;font-weight:700;color:var(--red);margin-top:1px;line-height:1.2;text-align:center}
+.cal-cell.selected .cal-spend-dot{background:rgba(255,255,255,.85)}
+.cal-day-num{font-size:15px;font-weight:500;color:var(--text);position:relative}
+.cal-spend-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);margin-top:5px}
 
 /* BUDGET */
 .budget-wrap{background:var(--surface);margin:0 16px 14px;border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
@@ -169,6 +170,12 @@ body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'S
 .budget-bar-fill.warn{background:var(--amber)}
 .budget-bar-fill.over{background:var(--red)}
 .budget-pct{font-size:11px;color:var(--text2);margin-top:5px;text-align:right}
+
+/* CHART TOGGLE */
+.seg-toggle{display:flex;background:var(--surface2);border-radius:var(--radius-sm);margin:12px 16px;padding:3px}
+.seg-btn{flex:1;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;
+  cursor:pointer;border:none;background:transparent;color:var(--text2);transition:background .15s,color .15s}
+.seg-btn.active{background:var(--surface);color:var(--teal);box-shadow:var(--shadow)}
 
 /* YEAR GRID */
 .year-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px}
@@ -342,7 +349,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 .view.active{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .fade-up{animation:fadeUp .25s ease forwards}
-#toast{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bot) + 80px);left:50%;
+#toast{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bot) + 16px);left:50%;
   transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--surface);
   padding:10px 20px;border-radius:20px;font-size:14px;font-weight:500;
   opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:200}
@@ -387,8 +394,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 
   <div id="main">
     <div id="view-day" class="view active"></div>
-    <div id="view-month" class="view"></div>
-    <div id="view-year" class="view"></div>
+    <div id="view-chart" class="view"></div>
     <div id="view-goals" class="view"></div>
     <div id="view-settings" class="view"></div>
   </div>
@@ -397,20 +403,18 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
     <button class="nav-item active" data-view="day">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none"/></svg>Day
     </button>
-    <button class="nav-item" data-view="month">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/><path d="M8 14h2M12 14h2M8 18h2M12 18h2M16 14h2"/></svg>Month
+    <button class="nav-item" data-view="chart">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6" rx="1"/><rect x="12" y="7" width="3" height="10" rx="1"/><rect x="17" y="4" width="3" height="13" rx="1"/></svg>Chart
     </button>
-    <button class="nav-item" data-view="year">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18M3 18l5-5 4 4 5-6 4 3"/></svg>Year
-    </button>
+    <div class="nav-fab-spacer"></div>
     <button class="nav-item" data-view="goals">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M6 8h4M6 12h8"/></svg>Budget
     </button>
     <button class="nav-item" data-view="settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings
     </button>
+    <button id="fab" aria-label="Add expense">+</button>
   </nav>
-  <button id="fab" aria-label="Add expense">+</button>
 </div>
 <div id="toast"></div>
 
@@ -757,6 +761,7 @@ const DB = {
 
 const State = {
   view: 'day',
+  chartSub: 'month',
   date: new Date(),
   expenses: [],
   categories: [],
@@ -889,10 +894,10 @@ async function loadExpensesForView() {
   if (State.view==='day') {
     const iso = fmt.isoDate(d);
     State.expenses = await DB.getByDateRange(iso,iso);
-  } else if (State.view==='month') {
+  } else if (State.view==='chart' && State.chartSub==='month') {
     const y=d.getFullYear(), m=d.getMonth()+1;
     State.expenses = await DB.getByDateRange(`${y}-${String(m).padStart(2,'0')}-01`,`${y}-${String(m).padStart(2,'0')}-31`);
-  } else if (State.view==='year') {
+  } else if (State.view==='chart' && State.chartSub==='year') {
     State.expenses = await DB.getByDateRange(`${d.getFullYear()}-01-01`,`${d.getFullYear()}-12-31`);
   } else {
     State.expenses = await DB.getAll('expenses');
@@ -911,8 +916,7 @@ async function render() {
   _budgets.forEach(b => { State.budgets[b.id] = b; });
   updateDateLabel();
   if (State.view==='day') await renderDay();
-  else if (State.view==='month') renderMonth();
-  else if (State.view==='year') renderYear();
+  else if (State.view==='chart') renderChart();
   else if (State.view==='goals') renderGoals();
   else if (State.view==='settings') renderSettings();
 }
@@ -920,16 +924,16 @@ async function render() {
 function updateDateLabel() {
   const d = State.date;
   const lbl = document.getElementById('date-label');
-  const showNav = ['day','month','year'].includes(State.view);
+  const showNav = ['day','chart'].includes(State.view);
   document.getElementById('date-nav').style.display = showNav ? 'flex' : 'none';
   if (State.view==='day') {
     const iso = fmt.isoDate(d), today = fmt.isoDate(new Date());
     if (iso===today) lbl.textContent='Today';
     else if (iso===fmt.isoDate(new Date(Date.now()-86400000))) lbl.textContent='Yesterday';
     else lbl.textContent=fmt.date(iso);
-  } else if (State.view==='month') {
+  } else if (State.view==='chart' && State.chartSub==='month') {
     lbl.textContent = fmt.monthYear(d);
-  } else {
+  } else if (State.view==='chart' && State.chartSub==='year') {
     lbl.textContent = d.getFullYear().toString();
   }
 }
@@ -977,10 +981,10 @@ function buildMonthGrid(year, month, showAmounts) {
     const isToday = iso===today;
     const isSelected = iso===selIso;
     const total = showAmounts ? State.dayTotals[iso] : null;
-    const amtHtml = total ? `<div class="cal-amt">${fmt.currencyShort(total)}</div>` : '';
+    const dotHtml = total ? `<div class="cal-spend-dot"></div>` : '';
     cells += `<div class="cal-cell ${isToday?'today':''} ${isSelected?'selected':''}" data-iso="${iso}">
       <div class="cal-day-num">${day}</div>
-      ${amtHtml}
+      ${dotHtml}
     </div>`;
   }
   // trailing cells
@@ -1063,7 +1067,7 @@ async function renderDay() {
   const calWrap = el.querySelector('.cal-wrap');
   const calTrack = el.querySelector('.cal-track');
   if (calWrap && calTrack) {
-    const w = calWrap.getBoundingClientRect().width;
+    const w = calTrack.children[0].getBoundingClientRect().width;
     let startX=0, startY=0, dx=0, dragging=false, locked=null, animating=false;
     const setX = (px, snap) => {
       calTrack.classList.toggle('cal-snap', !!snap);
@@ -1128,54 +1132,111 @@ function expenseItemHTML(e) {
 // MONTH VIEW
 // ═══════════════════════════════════════
 
-function renderMonth() {
-  const el = document.getElementById('view-month');
+function renderChart() {
+  const el = document.getElementById('view-chart');
+  const sub = State.chartSub;
   const expenses = State.expenses;
   const total = expenses.reduce((s,e)=>s+(+e.amount||0),0);
-  const days = [...new Set(expenses.map(e=>e.date))].sort().reverse();
-  const avgPerDay = days.length ? total/days.length : 0;
-  const budget = State.budgets[State.currentMonthKey];
-  const limit = budget?.overall||0;
-  const pct = limit ? Math.min((total/limit)*100,100) : 0;
-  const barClass = pct>90?'over':pct>70?'warn':'';
 
-  let html = `<div class="summary-strip">
-    <div class="summary-card accent"><div class="s-label">Spent</div><div class="s-value">${fmt.currency(total)}</div></div>
-    <div class="summary-card"><div class="s-label">Avg/day</div><div class="s-value">${fmt.currency(avgPerDay)}</div></div>
-    <div class="summary-card ${limit&&pct>90?'danger':''}"><div class="s-label">Remaining</div><div class="s-value">${limit?fmt.currency(limit-total):'—'}</div></div>
+  let html = `<div class="seg-toggle">
+    <button class="seg-btn ${sub==='month'?'active':''}" data-sub="month">Month</button>
+    <button class="seg-btn ${sub==='year'?'active':''}" data-sub="year">Year</button>
   </div>`;
 
-  if (limit) {
-    html += `<div class="budget-wrap">
-      <div class="budget-row"><span class="budget-label">Monthly budget</span><span class="budget-amount">${fmt.currency(total)} of ${fmt.currency(limit)}</span></div>
-      <div class="budget-bar-track"><div class="budget-bar-fill ${barClass}" style="width:${pct}%"></div></div>
-      <div class="budget-pct">${pct.toFixed(0)}% used${pct>=100?' — Over budget! ⚠️':''}</div>
-    </div>`;
-  }
+  let sortedCats = null, byMonth = null;
 
-  if (expenses.length) {
-    const byCategory = {};
-    expenses.forEach(e => { byCategory[e.category]=(byCategory[e.category]||0)+(+e.amount||0); });
-    const sorted = Object.entries(byCategory).sort((a,b)=>b[1]-a[1]);
-    html += `<div class="chart-wrap">
-      <div class="chart-title">SPENDING BY CATEGORY</div>
-      <div class="chart-canvas-wrap"><canvas id="donut-chart"></canvas></div>
-      <div class="cat-legend" id="cat-legend"></div>
+  if (sub === 'month') {
+    const days = [...new Set(expenses.map(e=>e.date))].sort().reverse();
+    const avgPerDay = days.length ? total/days.length : 0;
+    const budget = State.budgets[State.currentMonthKey];
+    const limit = budget?.overall||0;
+    const pct = limit ? Math.min((total/limit)*100,100) : 0;
+    const barClass = pct>90?'over':pct>70?'warn':'';
+
+    html += `<div class="summary-strip">
+      <div class="summary-card accent"><div class="s-label">Spent</div><div class="s-value">${fmt.currency(total)}</div></div>
+      <div class="summary-card"><div class="s-label">Avg/day</div><div class="s-value">${fmt.currency(avgPerDay)}</div></div>
+      <div class="summary-card ${limit&&pct>90?'danger':''}"><div class="s-label">Remaining</div><div class="s-value">${limit?fmt.currency(limit-total):'—'}</div></div>
     </div>`;
-    html += `<div class="section-header">By Day</div>`;
-    days.forEach(date => {
-      const dayExp = expenses.filter(e=>e.date===date);
-      const dayTotal = dayExp.reduce((s,e)=>s+(+e.amount||0),0);
-      html += `<div class="section-header" style="font-size:12px;padding:10px 16px 4px;color:var(--text2)">${fmt.date(date)} — <span style="color:var(--text)">${fmt.currency(dayTotal)}</span></div>`;
-      dayExp.sort((a,b)=>b.amount-a.amount).forEach(e => { html+=expenseItemHTML(e); });
-    });
-    setTimeout(()=>renderDonut(sorted,total),50);
+
+    if (limit) {
+      html += `<div class="budget-wrap">
+        <div class="budget-row"><span class="budget-label">Monthly budget</span><span class="budget-amount">${fmt.currency(total)} of ${fmt.currency(limit)}</span></div>
+        <div class="budget-bar-track"><div class="budget-bar-fill ${barClass}" style="width:${pct}%"></div></div>
+        <div class="budget-pct">${pct.toFixed(0)}% used${pct>=100?' — Over budget! ⚠️':''}</div>
+      </div>`;
+    }
+
+    if (expenses.length) {
+      const byCategory = {};
+      expenses.forEach(e => { byCategory[e.category]=(byCategory[e.category]||0)+(+e.amount||0); });
+      sortedCats = Object.entries(byCategory).sort((a,b)=>b[1]-a[1]);
+      html += `<div class="chart-wrap">
+        <div class="chart-title">SPENDING BY CATEGORY</div>
+        <div class="chart-canvas-wrap"><canvas id="donut-chart"></canvas></div>
+        <div class="cat-legend" id="cat-legend"></div>
+      </div>`;
+      html += `<div class="section-header">By Day</div>`;
+      days.forEach(date => {
+        const dayExp = expenses.filter(e=>e.date===date);
+        const dayTotal = dayExp.reduce((s,e)=>s+(+e.amount||0),0);
+        html += `<div class="section-header" style="font-size:12px;padding:10px 16px 4px;color:var(--text2)">${fmt.date(date)} — <span style="color:var(--text)">${fmt.currency(dayTotal)}</span></div>`;
+        dayExp.sort((a,b)=>b.amount-a.amount).forEach(e => { html+=expenseItemHTML(e); });
+      });
+    } else {
+      html += `<div class="empty-state fade-up"><div class="empty-icon">📅</div><h3>No expenses this month</h3><p>Start logging to see your breakdown.</p></div>`;
+    }
   } else {
-    html += `<div class="empty-state fade-up"><div class="empty-icon">📅</div><h3>No expenses this month</h3><p>Start logging to see your breakdown.</p></div>`;
+    const year = State.date.getFullYear(), now = new Date();
+    byMonth = {};
+    for(let m=0;m<12;m++) byMonth[m]=0;
+    expenses.forEach(e=>{ const m=parseInt(e.date.slice(5,7))-1; byMonth[m]+=(+e.amount||0); });
+    const yearTotal=Object.values(byMonth).reduce((s,v)=>s+v,0);
+    const monthsWithData=Object.values(byMonth).filter(v=>v>0).length;
+    const maxMonth=Math.max(...Object.values(byMonth),1);
+
+    html += `<div class="summary-strip">
+      <div class="summary-card accent"><div class="s-label">Year total</div><div class="s-value">${fmt.currencyShort(yearTotal)}</div></div>
+      <div class="summary-card"><div class="s-label">Avg/month</div><div class="s-value">${fmt.currencyShort(monthsWithData?yearTotal/monthsWithData:0)}</div></div>
+      <div class="summary-card"><div class="s-label">Active months</div><div class="s-value">${monthsWithData}</div></div>
+    </div>`;
+
+    html += `<div class="chart-wrap"><div class="chart-title">MONTHLY TREND</div><div class="trend-wrap"><canvas id="trend-chart"></canvas></div></div>`;
+    html += `<div class="year-grid">`;
+    for(let m=0;m<12;m++){
+      const isCurrent=year===now.getFullYear()&&m===now.getMonth();
+      const isFuture=year>now.getFullYear()||(year===now.getFullYear()&&m>now.getMonth());
+      const v=byMonth[m], prev=m>0?byMonth[m-1]:null;
+      let delta='';
+      if(prev!==null&&prev>0&&v>0){ const chg=(v-prev)/prev*100; delta=`<div class="m-delta ${chg>0?'up':'down'}">${chg>0?'▲':'▼'}${Math.abs(chg).toFixed(0)}%</div>`; }
+      html+=`<div class="month-tile ${isCurrent?'current':''} ${isFuture&&!v?'future':''}" data-month="${m}">
+        <div class="m-name">${fmt.monthShort(m)}</div>
+        <div class="m-amount">${v?fmt.currencyShort(v):'—'}</div>
+        <div class="m-bar"><div class="m-bar-fill" style="width:${(v/maxMonth*100).toFixed(0)}%"></div></div>
+        ${delta}</div>`;
+    }
+    html+=`</div>`;
   }
 
   el.innerHTML = html;
-  el.querySelectorAll('.expense-item').forEach(item=>item.addEventListener('click',()=>openEditExpense(item.dataset.id)));
+
+  el.querySelectorAll('.seg-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    if (State.chartSub===btn.dataset.sub) return;
+    State.chartSub = btn.dataset.sub;
+    render();
+  }));
+
+  if (sub === 'month') {
+    el.querySelectorAll('.expense-item').forEach(item=>item.addEventListener('click',()=>openEditExpense(item.dataset.id)));
+    if (expenses.length) setTimeout(()=>renderDonut(sortedCats,total),50);
+  } else {
+    el.querySelectorAll('.month-tile').forEach(tile=>tile.addEventListener('click',()=>{
+      State.date.setMonth(parseInt(tile.dataset.month));
+      State.chartSub='month';
+      render();
+    }));
+    setTimeout(()=>renderTrend(byMonth),50);
+  }
 }
 
 function renderDonut(sorted, total) {
@@ -1192,46 +1253,6 @@ function renderDonut(sorted, total) {
     <span class="cat-legend-name">${getCat(id).icon} ${getCat(id).name}</span>
     <span class="cat-legend-pct">${(val/total*100).toFixed(0)}%</span>
     <span class="cat-legend-amt">${fmt.currency(val)}</span></div>`).join('');
-}
-
-// ═══════════════════════════════════════
-// YEAR VIEW
-// ═══════════════════════════════════════
-
-function renderYear() {
-  const el = document.getElementById('view-year');
-  const year = State.date.getFullYear(), now = new Date();
-  const byMonth = {};
-  for(let m=0;m<12;m++) byMonth[m]=0;
-  State.expenses.forEach(e=>{ const m=parseInt(e.date.slice(5,7))-1; byMonth[m]+=(+e.amount||0); });
-  const yearTotal=Object.values(byMonth).reduce((s,v)=>s+v,0);
-  const monthsWithData=Object.values(byMonth).filter(v=>v>0).length;
-  const maxMonth=Math.max(...Object.values(byMonth),1);
-
-  let html = `<div class="summary-strip">
-    <div class="summary-card accent"><div class="s-label">Year total</div><div class="s-value">${fmt.currencyShort(yearTotal)}</div></div>
-    <div class="summary-card"><div class="s-label">Avg/month</div><div class="s-value">${fmt.currencyShort(monthsWithData?yearTotal/monthsWithData:0)}</div></div>
-    <div class="summary-card"><div class="s-label">Active months</div><div class="s-value">${monthsWithData}</div></div>
-  </div>`;
-
-  html += `<div class="chart-wrap"><div class="chart-title">MONTHLY TREND</div><div class="trend-wrap"><canvas id="trend-chart"></canvas></div></div>`;
-  html += `<div class="year-grid">`;
-  for(let m=0;m<12;m++){
-    const isCurrent=year===now.getFullYear()&&m===now.getMonth();
-    const isFuture=year>now.getFullYear()||(year===now.getFullYear()&&m>now.getMonth());
-    const v=byMonth[m], prev=m>0?byMonth[m-1]:null;
-    let delta='';
-    if(prev!==null&&prev>0&&v>0){ const chg=(v-prev)/prev*100; delta=`<div class="m-delta ${chg>0?'up':'down'}">${chg>0?'▲':'▼'}${Math.abs(chg).toFixed(0)}%</div>`; }
-    html+=`<div class="month-tile ${isCurrent?'current':''} ${isFuture&&!v?'future':''}" data-month="${m}">
-      <div class="m-name">${fmt.monthShort(m)}</div>
-      <div class="m-amount">${v?fmt.currencyShort(v):'—'}</div>
-      <div class="m-bar"><div class="m-bar-fill" style="width:${(v/maxMonth*100).toFixed(0)}%"></div></div>
-      ${delta}</div>`;
-  }
-  html+=`</div>`;
-  el.innerHTML = html;
-  el.querySelectorAll('.month-tile').forEach(tile=>tile.addEventListener('click',()=>{ State.date.setMonth(parseInt(tile.dataset.month)); switchView('month'); }));
-  setTimeout(()=>renderTrend(byMonth),50);
 }
 
 function renderTrend(byMonth) {
@@ -2250,7 +2271,7 @@ document.getElementById('btn-prev').addEventListener('click',()=>{
   const d=State.date;
   const prevMonth = State.date.getMonth();
   if(State.view==='day') d.setDate(d.getDate()-1);
-  else if(State.view==='month') d.setMonth(d.getMonth()-1);
+  else if(State.view==='chart'&&State.chartSub==='month') d.setMonth(d.getMonth()-1);
   else d.setFullYear(d.getFullYear()-1);
   if(State.date.getMonth()!==prevMonth) invalidateCalCache();
   render();
@@ -2259,14 +2280,14 @@ document.getElementById('btn-next').addEventListener('click',()=>{
   const d=State.date;
   const prevMonth = State.date.getMonth();
   if(State.view==='day') d.setDate(d.getDate()+1);
-  else if(State.view==='month') d.setMonth(d.getMonth()+1);
+  else if(State.view==='chart'&&State.chartSub==='month') d.setMonth(d.getMonth()+1);
   else d.setFullYear(d.getFullYear()+1);
   if(State.date.getMonth()!==prevMonth) invalidateCalCache();
   render();
 });
 document.getElementById('date-label').addEventListener('click',()=>{ if(State.view==='day'){ State.date=new Date(); render(); } });
 
-// Swipe — global handler for day/month/year navigation
+// Swipe — global handler for day/chart navigation
 // _touchInCal: touch started inside the calendar widget → let the calendar handle it, skip day nav
 let _tx=0, _touchInCal=false;
 document.getElementById('main').addEventListener('touchstart',e=>{
@@ -2276,13 +2297,14 @@ document.getElementById('main').addEventListener('touchstart',e=>{
 document.getElementById('main').addEventListener('touchend',e=>{
   if(_touchInCal) return; // calendar's own handler takes over
   const dx=e.changedTouches[0].clientX-_tx; if(Math.abs(dx)<60)return;
-  if(!['day','month','year'].includes(State.view))return;
+  if(!['day','chart'].includes(State.view))return;
   const d=State.date;
   const prevMonth = d.getMonth();
+  const isMonthSub = State.view==='chart'&&State.chartSub==='month';
   if(dx<0){
-    if(State.view==='day')d.setDate(d.getDate()+1); else if(State.view==='month')d.setMonth(d.getMonth()+1); else d.setFullYear(d.getFullYear()+1);
+    if(State.view==='day')d.setDate(d.getDate()+1); else if(isMonthSub)d.setMonth(d.getMonth()+1); else d.setFullYear(d.getFullYear()+1);
   } else {
-    if(State.view==='day')d.setDate(d.getDate()-1); else if(State.view==='month')d.setMonth(d.getMonth()-1); else d.setFullYear(d.getFullYear()-1);
+    if(State.view==='day')d.setDate(d.getDate()-1); else if(isMonthSub)d.setMonth(d.getMonth()-1); else d.setFullYear(d.getFullYear()-1);
   }
   if(d.getMonth()!==prevMonth) invalidateCalCache();
   render();
