@@ -59,7 +59,7 @@ html[data-theme="light"]{--teal:#C05C2A;--teal-dark:#7A3010;--teal-light:#FAEEE6
 html{height:100%;overflow:hidden;background:var(--surface)}
 body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
   background:var(--surface);color:var(--text);-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
-#app{height:100vh;height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;overflow:hidden}
 
 /* HEADER */
 #header{background:var(--surface);border-bottom:.5px solid var(--border);
@@ -139,7 +139,7 @@ body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'S
 .trend-wrap{height:140px;position:relative;margin-top:8px}
 
 /* CALENDAR */
-.cal-wrap{background:var(--surface);margin:12px 16px 4px;border-radius:var(--radius);padding:10px;box-shadow:var(--shadow)}
+.cal-wrap{background:var(--surface);margin:12px 16px 4px;border-radius:var(--radius);padding:10px;box-shadow:var(--shadow);touch-action:pan-x}
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .cal-month-label{font-size:13px;font-weight:700;color:var(--text)}
 .cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
@@ -147,7 +147,11 @@ body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'S
 .cal-track{display:flex;width:300%}
 .cal-track.cal-snap{transition:transform .32s cubic-bezier(.22,.61,.36,1)}
 .cal-panel{flex:0 0 33.3334%;min-width:0}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-grid-clip{overflow:hidden;transition:height .32s cubic-bezier(.22,.61,.36,1)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;transition:transform .32s cubic-bezier(.22,.61,.36,1)}
+.cal-collapse-handle{display:flex;justify-content:center;padding-top:8px;cursor:pointer}
+.cal-collapse-bar{width:32px;height:4px;border-radius:2px;background:var(--border);transition:transform .2s,background .2s}
+.cal-wrap.cal-collapsed .cal-collapse-bar{background:var(--teal)}
 .cal-dow{font-size:10px;font-weight:600;color:var(--text3);text-align:center;padding:2px 0 4px}
 .cal-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:4px 2px 3px;border-radius:8px;cursor:pointer;min-height:56px;transition:background .12s;position:relative}
@@ -787,6 +791,7 @@ const State = {
   charts: {},
   dayTotals: {},           // { 'YYYY-MM-DD': total } for calendar
   calMonth: null,          // month key for cached dayTotals
+  calCollapsed: false,     // calendar collapsed to single week row
 
   get currentMonthKey() {
     return `${this.date.getFullYear()}-${String(this.date.getMonth()+1).padStart(2,'0')}`;
@@ -994,7 +999,7 @@ function buildMonthGrid(year, month, showAmounts) {
     cells += `<div class="cal-cell other-month"><div class="cal-day-num">${i}</div></div>`;
   }
 
-  return `<div class="cal-grid">${cells}</div>`;
+  return `<div class="cal-grid-clip"><div class="cal-grid">${cells}</div></div>`;
 }
 
 function renderCalendar() {
@@ -1013,7 +1018,54 @@ function renderCalendar() {
         <div class="cal-panel">${buildMonthGrid(next.getFullYear(), next.getMonth(), false)}</div>
       </div>
     </div>
+    <div class="cal-collapse-handle"><div class="cal-collapse-bar"></div></div>
   </div>`;
+}
+
+// Row index (0-based, Mon-start week) of the selected date within its month grid
+function currentWeekIndex() {
+  const d = State.date;
+  const firstDow = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
+  const startOffset = (firstDow+6)%7;
+  return Math.floor((startOffset + d.getDate() - 1) / 7);
+}
+
+// Apply (or re-apply) collapsed/expanded calendar layout.
+// animate=true → smooth transition (user-triggered toggle); animate=false → instant (e.g. after re-render)
+function applyCalLayout(calWrap, animate) {
+  if (!calWrap) return;
+  const collapsed = State.calCollapsed;
+  calWrap.classList.toggle('cal-collapsed', collapsed);
+  const cell = calWrap.querySelector('.cal-cell:not(.other-month)') || calWrap.querySelector('.cal-cell');
+  if (!cell) return;
+  const rowH = Math.round(cell.getBoundingClientRect().height) + 6; // cell height + grid gap
+  const weekIdx = currentWeekIndex();
+  calWrap.querySelectorAll('.cal-panel').forEach(panel => {
+    const clip = panel.querySelector('.cal-grid-clip');
+    const grid = panel.querySelector('.cal-grid');
+    if (!clip || !grid) return;
+    if (!animate) { clip.style.transition = 'none'; grid.style.transition = 'none'; }
+    if (collapsed) {
+      clip.style.height = rowH + 'px';
+      grid.style.transform = `translateY(-${weekIdx*rowH}px)`;
+    } else {
+      clip.style.height = grid.scrollHeight + 'px';
+      grid.style.transform = 'translateY(0)';
+      if (animate) {
+        clip.addEventListener('transitionend', function done(){
+          clip.removeEventListener('transitionend', done);
+          if (!State.calCollapsed) clip.style.height = 'auto';
+        }, {once:true});
+      } else {
+        clip.style.height = 'auto';
+      }
+    }
+    if (!animate) {
+      void clip.offsetHeight; // force reflow before restoring transitions
+      clip.style.transition = '';
+      grid.style.transition = '';
+    }
+  });
 }
 
 // ═══════════════════════════════════════
@@ -1068,15 +1120,16 @@ async function renderDay() {
   const calTrack = el.querySelector('.cal-track');
   if (calWrap && calTrack) {
     const w = calTrack.children[0].getBoundingClientRect().width;
-    let startX=0, startY=0, dx=0, dragging=false, locked=null, animating=false;
+    let startX=0, startY=0, dx=0, dy=0, dragging=false, locked=null, animating=false;
     const setX = (px, snap) => {
       calTrack.classList.toggle('cal-snap', !!snap);
       calTrack.style.transform = `translate3d(${px}px,0,0)`;
     };
     setX(-w, false);
+    applyCalLayout(calWrap, false);
     calWrap.addEventListener('touchstart', e=>{
       if (animating) return;
-      startX=e.touches[0].clientX; startY=e.touches[0].clientY; dx=0; dragging=false; locked=null;
+      startX=e.touches[0].clientX; startY=e.touches[0].clientY; dx=0; dy=0; dragging=false; locked=null;
       setX(-w, false);
     },{passive:true});
     calWrap.addEventListener('touchmove', e=>{
@@ -1087,9 +1140,16 @@ async function renderDay() {
         locked = Math.abs(ddx) > Math.abs(ddy)*1.2 ? 'x' : 'y';
       }
       if (locked==='x') { dragging=true; dx=ddx; setX(-w+dx, false); }
+      else if (locked==='y') { dy=ddy; }
     },{passive:true});
     calWrap.addEventListener('touchend', () => {
       if (animating) return;
+      if (locked==='y') {
+        const threshold = 28;
+        if (dy<=-threshold && !State.calCollapsed) { State.calCollapsed=true; applyCalLayout(calWrap, true); }
+        else if (dy>=threshold && State.calCollapsed) { State.calCollapsed=false; applyCalLayout(calWrap, true); }
+        setX(-w, false); dy=0; locked=null; return;
+      }
       if (!dragging) { setX(-w, false); locked=null; return; }
       const threshold = w*0.22;
       if (dx<=-threshold || dx>=threshold) {
@@ -1109,6 +1169,15 @@ async function renderDay() {
       }
       dragging=false; dx=0; locked=null;
     },{passive:true});
+  }
+
+  // Collapse handle — tap to toggle calendar collapse (fallback for swipe)
+  const calHandle = el.querySelector('.cal-collapse-handle');
+  if (calHandle && calWrap) {
+    calHandle.addEventListener('click', () => {
+      State.calCollapsed = !State.calCollapsed;
+      applyCalLayout(calWrap, true);
+    });
   }
 }
 
