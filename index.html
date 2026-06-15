@@ -59,7 +59,7 @@ html[data-theme="light"]{--teal:#C05C2A;--teal-dark:#7A3010;--teal-light:#FAEEE6
 html{height:100%;overflow:hidden;background:var(--surface);overscroll-behavior:none}
 body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
   background:var(--surface);color:var(--text);-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
-#app{position:fixed;top:0;left:0;right:0;height:100dvh;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:none}
+#app{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:none}
 
 /* HEADER */
 #header{background:var(--surface);border-bottom:.5px solid var(--border);
@@ -79,7 +79,7 @@ body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'S
 #date-label:active{background:var(--teal-light)}
 
 /* MAIN */
-#main{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;
+#main{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:none;
   padding-bottom:calc(var(--nav-h) + var(--safe-bot) + 12px);scrollbar-width:none;-ms-overflow-style:none}
 #main::-webkit-scrollbar{display:none}
 
