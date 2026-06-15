@@ -56,10 +56,10 @@ html[data-theme="light"]{--teal:#C05C2A;--teal-dark:#7A3010;--teal-light:#FAEEE6
   }
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{height:100%;overflow:hidden;background:var(--surface)}
+html{height:100%;overflow:hidden;background:var(--surface);overscroll-behavior:none}
 body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
   background:var(--surface);color:var(--text);-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
-#app{position:fixed;top:0;left:0;right:0;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+#app{position:fixed;top:0;left:0;right:0;height:100dvh;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:none}
 
 /* HEADER */
 #header{background:var(--surface);border-bottom:.5px solid var(--border);
@@ -79,7 +79,7 @@ body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'S
 #date-label:active{background:var(--teal-light)}
 
 /* MAIN */
-#main{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
+#main{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;
   padding-bottom:calc(var(--nav-h) + var(--safe-bot) + 12px);scrollbar-width:none;-ms-overflow-style:none}
 #main::-webkit-scrollbar{display:none}
 
@@ -982,7 +982,7 @@ function buildMonthGrid(year, month, showAmounts) {
 
   // leading cells from prev month
   for (let i=0; i<startOffset; i++) {
-    cells += `<div class="cal-cell other-month"><div class="cal-day-num">${daysInPrev - startOffset + 1 + i}</div></div>`;
+    cells += `<div class="cal-cell other-month"><div class="cal-day-num">${daysInPrev - startOffset + 1 + i}</div><div class="cal-spend-dot" style="visibility:hidden"></div></div>`;
   }
   // current month cells
   for (let day=1; day<=daysInMonth; day++) {
@@ -990,7 +990,7 @@ function buildMonthGrid(year, month, showAmounts) {
     const isToday = iso===today;
     const isSelected = iso===selIso;
     const total = showAmounts ? State.dayTotals[iso] : null;
-    const dotHtml = total ? `<div class="cal-spend-dot"></div>` : '';
+    const dotHtml = `<div class="cal-spend-dot" style="visibility:${total ? 'visible' : 'hidden'}"></div>`;
     cells += `<div class="cal-cell ${isToday?'today':''} ${isSelected?'selected':''}" data-iso="${iso}">
       <div class="cal-day-num">${day}</div>
       ${dotHtml}
@@ -1000,7 +1000,7 @@ function buildMonthGrid(year, month, showAmounts) {
   const totalCells = startOffset + daysInMonth;
   const trailing = totalCells % 7 ? 7 - (totalCells % 7) : 0;
   for (let i=1; i<=trailing; i++) {
-    cells += `<div class="cal-cell other-month"><div class="cal-day-num">${i}</div></div>`;
+    cells += `<div class="cal-cell other-month"><div class="cal-day-num">${i}</div><div class="cal-spend-dot" style="visibility:hidden"></div></div>`;
   }
 
   return `<div class="cal-grid-clip"><div class="cal-grid">${cells}</div></div>`;
