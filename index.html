@@ -260,6 +260,10 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 .modal-top{display:flex;align-items:center;justify-content:space-between;padding:0 16px 12px}
 .modal-close-btn{background:var(--surface2);border:none;border-radius:50%;width:30px;height:30px;
   font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2)}
+/* Expense modal: fixed header + scrolling body + pinned save footer */
+#modal-expense .modal-sheet{display:flex;flex-direction:column;overflow-y:hidden;padding-bottom:0}
+#modal-expense .modal-body{flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch;padding-bottom:16px}
+.modal-footer{flex-shrink:0;padding:12px 16px calc(var(--safe-bot) + 12px);border-top:.5px solid var(--border);background:var(--surface)}
 
 /* FORM */
 .form-group{margin-bottom:16px}
@@ -434,7 +438,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
     <div class="modal-top">
       <button class="modal-close-btn" id="expense-cancel">✕</button>
       <div class="modal-title" id="expense-modal-title">Add Expense</div>
-      <button class="modal-close-btn" id="expense-save" style="background:var(--teal);color:white;font-weight:700;font-size:13px;width:auto;padding:0 14px;border-radius:20px">Save</button>
+      <div style="width:30px"></div>
     </div>
     <div class="modal-body">
       <div class="calc-display-wrap">
@@ -510,6 +514,9 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 
       <button id="btn-receipt" style="width:100%;padding:13px;border-radius:var(--radius-sm);background:var(--surface2);color:var(--text2);border:none;font-size:14px;cursor:pointer;margin-bottom:10px">📷 Scan receipt</button>
       <button id="btn-delete-expense" style="display:none;width:100%;padding:13px;border-radius:var(--radius-sm);background:var(--red-light);color:var(--red);border:none;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px">🗑️ Delete this expense</button>
+    </div>
+    <div class="modal-footer">
+      <button id="expense-save" style="width:100%;padding:15px;background:var(--teal);color:white;font-weight:700;font-size:16px;border:none;border-radius:var(--radius);cursor:pointer;letter-spacing:.2px">Save Expense</button>
     </div>
   </div>
 </div>
