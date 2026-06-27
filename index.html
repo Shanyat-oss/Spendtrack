@@ -165,9 +165,9 @@ body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'S
 .cal-cell.today .cal-day-num{font-weight:800;color:var(--teal)}
 .cal-cell.selected{background:var(--teal)}
 .cal-cell.selected .cal-day-num{color:white;font-weight:700}
-.cal-cell.selected .cal-spend-dot{background:rgba(255,255,255,.85)}
+.cal-cell.selected .cal-spend-amt{color:rgba(255,255,255,.9)}
 .cal-day-num{font-size:15px;font-weight:500;color:var(--text);position:relative}
-.cal-spend-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);margin-top:5px}
+.cal-spend-amt{font-size:9px;font-weight:600;color:var(--teal);margin-top:3px;line-height:1;letter-spacing:-.2px;min-height:9px}
 
 /* BUDGET */
 .budget-wrap{background:var(--surface);margin:0 16px 14px;border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
@@ -990,7 +990,7 @@ function buildMonthGrid(year, month, showAmounts) {
 
   // leading cells from prev month
   for (let i=0; i<startOffset; i++) {
-    cells += `<div class="cal-cell other-month"><div class="cal-day-num">${daysInPrev - startOffset + 1 + i}</div><div class="cal-spend-dot" style="visibility:hidden"></div></div>`;
+    cells += `<div class="cal-cell other-month"><div class="cal-day-num">${daysInPrev - startOffset + 1 + i}</div><div class="cal-spend-amt"></div></div>`;
   }
   // current month cells
   for (let day=1; day<=daysInMonth; day++) {
@@ -998,17 +998,17 @@ function buildMonthGrid(year, month, showAmounts) {
     const isToday = iso===today;
     const isSelected = iso===selIso;
     const total = showAmounts ? State.dayTotals[iso] : null;
-    const dotHtml = `<div class="cal-spend-dot" style="visibility:${total ? 'visible' : 'hidden'}"></div>`;
+    const amtHtml = `<div class="cal-spend-amt">${total ? fmt.currencyShort(total) : ''}</div>`;
     cells += `<div class="cal-cell ${isToday?'today':''} ${isSelected?'selected':''}" data-iso="${iso}">
       <div class="cal-day-num">${day}</div>
-      ${dotHtml}
+      ${amtHtml}
     </div>`;
   }
   // trailing cells
   const totalCells = startOffset + daysInMonth;
   const trailing = totalCells % 7 ? 7 - (totalCells % 7) : 0;
   for (let i=1; i<=trailing; i++) {
-    cells += `<div class="cal-cell other-month"><div class="cal-day-num">${i}</div><div class="cal-spend-dot" style="visibility:hidden"></div></div>`;
+    cells += `<div class="cal-cell other-month"><div class="cal-day-num">${i}</div><div class="cal-spend-amt"></div></div>`;
   }
 
   return `<div class="cal-grid-clip"><div class="cal-grid">${cells}</div></div>`;
