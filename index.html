@@ -121,7 +121,7 @@ body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'S
 .expense-name{font-size:15px;font-weight:500}
 .expense-sub{font-size:12px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .expense-amount{font-size:16px;font-weight:600}
-.expense-gst{font-size:10px;color:var(--text3);text-align:right;margin-top:2px}
+
 
 /* EMPTY */
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -496,14 +496,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
       </div>
 
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
-        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);padding:12px 14px;border-radius:var(--radius-sm)">
-          <div>
-            <div style="font-size:14px;font-weight:500">GST inclusive (9%)</div>
-            <div style="font-size:11px;color:var(--text2)">Shows pre-GST amount for expense claims</div>
-          </div>
-          <button class="toggle" id="gst-toggle"></button>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);padding:12px 14px;border-radius:var(--radius-sm)">
+<div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);padding:12px 14px;border-radius:var(--radius-sm)">
           <div>
             <div style="font-size:14px;font-weight:500">Recurring expense</div>
             <div style="font-size:11px;color:var(--text2)">Auto-add each month</div>
@@ -787,7 +780,6 @@ const State = {
   editingExpenseId: null,
   editingGoalId: null,
   expTags: [],
-  gstOn: false,
   recurringOn: false,
   selectedCategory: null,
   selectedPayment: null,
@@ -1093,8 +1085,6 @@ async function renderDay() {
   }
   if (State.filterCategory) expenses = expenses.filter(e=>e.category===State.filterCategory);
   const total = expenses.reduce((s,e)=>s+(+e.amount||0),0);
-  const gstTotal = expenses.filter(e=>e.gst).reduce((s,e)=>s+(+e.amount||0)/1.09*0.09,0);
-
   // Load monthly totals for calendar (cached)
   await loadDayTotals();
   // Keep today's actual total in sync
@@ -1105,7 +1095,6 @@ async function renderDay() {
   html += `<div class="summary-strip">
     <div class="summary-card accent"><div class="s-label">Total</div><div class="s-value">${fmt.currency(total)}</div></div>
     <div class="summary-card"><div class="s-label">Entries</div><div class="s-value">${expenses.length}</div></div>
-    <div class="summary-card"><div class="s-label">GST paid</div><div class="s-value">${fmt.currency(gstTotal)}</div></div>
   </div>`;
 
   if (!expenses.length) {
@@ -1197,7 +1186,6 @@ function expenseItemHTML(e) {
   const cat = getCat(e.category);
   const pay = State.payMethods.find(p=>p===e.paymentMethod);
   const sub = [pay, e.note||'', (e.tags||[]).map(t=>`#${t}`).join(' ')].filter(Boolean).join(' · ');
-  const gstLine = e.gst ? `<div class="expense-gst">pre-GST: ${fmt.currency(e.amount/1.09)}</div>` : '';
   const recurBadge = e.recurring ? `<span class="recur-badge">↻</span> ` : '';
   return `<div class="expense-item" data-id="${e.id}">
     <div class="expense-icon" style="background:var(--surface2)">${cat.icon}</div>
@@ -1205,7 +1193,7 @@ function expenseItemHTML(e) {
       <div class="expense-name">${recurBadge}${cat.name}</div>
       ${sub?`<div class="expense-sub">${sub}</div>`:''}
     </div>
-    <div><div class="expense-amount">${fmt.currency(e.amount)}</div>${gstLine}</div>
+    <div><div class="expense-amount">${fmt.currency(e.amount)}</div></div>
   </div>`;
 }
 
@@ -1875,7 +1863,7 @@ document.getElementById('cat-modal-save').addEventListener('click', async () => 
 
 function openAddExpense() {
   State.editingExpenseId = null;
-  State.expTags = []; State.gstOn = false; State.recurringOn = false;
+  State.expTags = []; State.recurringOn = false;
   State.selectedCategory = 'hawker'; State.selectedPayment = null;
   State.openMainCat = 'food'; State.payWiggleMode = false; State.payAddOpen = false; State.subWiggleMode = false;
   document.getElementById('expense-modal-title').textContent = 'Add Expense';
@@ -1884,7 +1872,6 @@ function openAddExpense() {
   document.getElementById('exp-note').value = '';
   document.getElementById('exp-tag-input').value = '';
   document.getElementById('tag-display').innerHTML = '';
-  document.getElementById('gst-toggle').classList.remove('on');
   document.getElementById('recurring-toggle').classList.remove('on');
   document.getElementById('btn-delete-expense').style.display = 'none';
   buildCatPicker();
@@ -1897,7 +1884,7 @@ async function openEditExpense(id) {
   if (!exp) exp = await DB.get('expenses', id);
   if (!exp) return;
   State.editingExpenseId = id;
-  State.expTags = [...(exp.tags||[])]; State.gstOn = !!exp.gst; State.recurringOn = !!exp.recurring;
+  State.expTags = [...(exp.tags||[])]; State.recurringOn = !!exp.recurring;
   State.selectedCategory = exp.category; State.selectedPayment = exp.paymentMethod||null;
   State.openMainCat = null; State.payWiggleMode = false; State.payAddOpen = false; State.subWiggleMode = false;
   document.getElementById('expense-modal-title').textContent = 'Edit Expense';
@@ -1905,7 +1892,6 @@ async function openEditExpense(id) {
   document.getElementById('exp-date').value = exp.date;
   document.getElementById('exp-note').value = exp.note||'';
   document.getElementById('exp-tag-input').value = '';
-  document.getElementById('gst-toggle').classList.toggle('on', State.gstOn);
   document.getElementById('recurring-toggle').classList.toggle('on', State.recurringOn);
   document.getElementById('btn-delete-expense').style.display = 'block';
   renderTags(); buildCatPicker(); buildPayPicker();
@@ -1927,7 +1913,6 @@ document.getElementById('exp-tag-input').addEventListener('keydown', e => {
   }
 });
 
-document.getElementById('gst-toggle').addEventListener('click', function(){ State.gstOn=!State.gstOn; this.classList.toggle('on',State.gstOn); });
 document.getElementById('recurring-toggle').addEventListener('click', function(){ State.recurringOn=!State.recurringOn; this.classList.toggle('on',State.recurringOn); });
 document.getElementById('expense-cancel').addEventListener('click', () => closeModal('modal-expense'));
 document.getElementById('expense-save').addEventListener('click', saveExpense);
@@ -1948,7 +1933,7 @@ async function saveExpense() {
     category: State.selectedCategory, paymentMethod: State.selectedPayment,
     date: document.getElementById('exp-date').value||fmt.isoDate(new Date()),
     note: document.getElementById('exp-note').value.trim(),
-    tags: [...State.expTags], gst: State.gstOn, recurring: State.recurringOn,
+    tags: [...State.expTags], recurring: State.recurringOn,
     createdAt: State.editingExpenseId?undefined:Date.now(),
   };
   await DB.put('expenses',exp);
@@ -2049,10 +2034,10 @@ async function getExportExpenses() {
 
 document.getElementById('export-csv').addEventListener('click', async () => {
   const exps = await getExportExpenses();
-  const rows=[['Date','Category','Group','Amount (S$)','Payment','Note','Tags','GST','Pre-GST']];
+  const rows=[['Date','Category','Group','Amount (S$)','Payment','Note','Tags']];
   exps.sort((a,b)=>a.date.localeCompare(b.date)).forEach(e=>{
     const cat=getCat(e.category), mc=getMain(cat.mainCat);
-    rows.push([e.date,`${cat.icon} ${cat.name}`,mc.name,(+e.amount).toFixed(2),e.paymentMethod||'',e.note||'',(e.tags||[]).join(';'),e.gst?'Yes':'No',e.gst?(e.amount/1.09).toFixed(2):'']);
+    rows.push([e.date,`${cat.icon} ${cat.name}`,mc.name,(+e.amount).toFixed(2),e.paymentMethod||'',e.note||'',(e.tags||[]).join(';')]);
   });
   const csv='﻿'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   downloadFile(`spendtrack-${new Date().toISOString().slice(0,10)}.csv`,csv,'text/csv;charset=utf-8');
@@ -2165,8 +2150,7 @@ document.getElementById('export-ai').addEventListener('click', async () => {
       date:e.date, amount:+e.amount, currency:'SGD',
       category:`${cat.icon} ${cat.name}`, group:`${mc.icon} ${mc.name}`,
       paymentMethod:e.paymentMethod||null, note:e.note||null,
-      tags:e.tags?.length?e.tags:null, gstInclusive:e.gst||false,
-      preGstAmount:e.gst?+(e.amount/1.09).toFixed(2):null,
+      tags:e.tags?.length?e.tags:null,
       recurring:e.recurring||false
     };
   });
