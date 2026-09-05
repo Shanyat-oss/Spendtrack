@@ -3385,6 +3385,24 @@ document.getElementById('btn-theme').addEventListener('click', toggleTheme);
 // a recalculation. Measure the real visible height and publish it as --app-h.
 // visualViewport is the truthful source where it exists; innerHeight is the fallback.
 let _appH = 0, _appHRaf = null, _maxH = 0, _orient = null;
+let _insetProbeTop = null, _insetProbeBot = null, _maxTop = 0, _maxBot = 0;
+// env(safe-area-inset-*) is not stable on iOS either: it changes as the system
+// overlays toggle. Latching only the height left the tab bar's OFFSET moving, which
+// pumps the bar even inside a perfectly stable box. Measure the insets and latch
+// them the same way, then publish them as plain pixels.
+function readInsets() {
+  if (!_insetProbeTop) {
+    const mk = side => {
+      const d = document.createElement('div');
+      d.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;pointer-events:none;'
+                      + 'height:env(safe-area-inset-' + side + ',0px)';
+      document.body.appendChild(d); return d;
+    };
+    _insetProbeTop = mk('top'); _insetProbeBot = mk('bottom');
+  }
+  return { top: _insetProbeTop.getBoundingClientRect().height,
+           bot: _insetProbeBot.getBoundingClientRect().height };
+}
 function syncAppHeight() {
   if (_appHRaf) return;                       // coalesce bursts into one write
   _appHRaf = requestAnimationFrame(() => {
@@ -3393,20 +3411,40 @@ function syncAppHeight() {
     const raw = Math.round(vv ? vv.height : window.innerHeight);
     if (!raw) return;
 
-    // Within one orientation the screen does not actually change size. iOS, however,
-    // reports two different heights as its status-bar overlay toggles, and following
-    // both is what makes the whole shell pump up and down. Latch to the tallest
-    // height seen in this orientation and ignore the smaller twin.
     const orient = window.innerWidth > window.innerHeight ? 'land' : 'port';
-    if (orient !== _orient) { _orient = orient; _maxH = 0; }
-    // Never exceed the physical screen: a bogus large report should not stretch the app.
-    const ceiling = Math.max(screen.height, screen.width) || raw;
-    _maxH = Math.min(Math.max(_maxH, raw), ceiling);
+    if (orient !== _orient) { _orient = orient; _maxH = 0; _maxTop = 0; _maxBot = 0; }
+
+    // MEASURED ON DEVICE (iPhone 16, installed): screen.height 852, innerHeight 793,
+    // difference 59 — exactly env(safe-area-inset-top). In standalone iOS subtracts the
+    // status bar from the layout viewport while still reporting it as a top inset, so a
+    // page that trusts innerHeight ends 59px short and leaves dead screen beneath it.
+    // The web view does cover the whole screen, so target the screen, not the report.
+    const standalone = (matchMedia && matchMedia('(display-mode:standalone)').matches)
+                    || navigator.standalone === true;
+    const portrait = window.innerWidth <= window.innerHeight;
+    const screenTarget = portrait ? Math.max(screen.width, screen.height)
+                                  : Math.min(screen.width, screen.height);
+    let target = raw;
+    // Only trust the screen when it is plausibly the same display: a modest shortfall,
+    // not a different window entirely.
+    if (standalone && screenTarget && screenTarget > raw && screenTarget - raw <= 160) {
+      target = screenTarget;
+    }
+    // Latch to the tallest plausible height for this orientation; ignore the smaller twin.
+    _maxH = Math.min(Math.max(_maxH, target), screenTarget || target);
     const h = _maxH;
+
+    const root = document.documentElement;
+
+    // Latch the insets per orientation, exactly as with the height.
+    const ins = readInsets();
+    const nTop = Math.min(Math.max(_maxTop, Math.round(ins.top)), 120);
+    const nBot = Math.min(Math.max(_maxBot, Math.round(ins.bot)), 120);
+    if (nTop !== _maxTop) { _maxTop = nTop; root.style.setProperty('--safe-top', nTop + 'px'); }
+    if (nBot !== _maxBot) { _maxBot = nBot; root.style.setProperty('--safe-bot', Math.max(nBot, 8) + 'px'); }
 
     if (Math.abs(h - _appH) < 2) return;
     _appH = h;
-    const root = document.documentElement;
     root.style.setProperty('--app-h', h + 'px');
     // The Log screen is the tallest layout in the app. On short screens it must
     // compress, or Save ends up underneath the tab bar.
@@ -3418,7 +3456,7 @@ function watchAppHeight() {
   syncAppHeight();
   addEventListener('resize', syncAppHeight);
   addEventListener('orientationchange', () => {
-    _orient = null; _maxH = 0;                 // a real size change: start measuring again
+    _orient = null; _maxH = 0; _maxTop = 0; _maxBot = 0;   // a real size change: measure again
     syncAppHeight(); [60, 250, 600].forEach(t => setTimeout(syncAppHeight, t));
   });
   addEventListener('pageshow', syncAppHeight);
@@ -3447,9 +3485,8 @@ function showLayoutDebug(force) {
   const rows = [
     ['display-mode', matchMedia('(display-mode:standalone)').matches ? 'standalone' : 'browser'],
     ['navigator.standalone', String(navigator.standalone)],
-    ['env safe-area top', insetTop.toFixed(1) + 'px'],
-    ['env safe-area bottom', insetBot.toFixed(1) + 'px'],
-    ['--safe-bot resolved', getComputedStyle(document.documentElement).getPropertyValue('--safe-bot').trim()],
+    ['env top raw / latched', insetTop.toFixed(1) + ' / ' + getComputedStyle(document.documentElement).getPropertyValue('--safe-top').trim()],
+    ['env bottom raw / latched', insetBot.toFixed(1) + ' / ' + getComputedStyle(document.documentElement).getPropertyValue('--safe-bot').trim()],
     ['innerHeight', innerHeight + 'px'],
     ['visualViewport.height', vv ? vv.height.toFixed(1) + 'px' : 'n/a'],
     ['screen.height', screen.height + 'px'],
@@ -3457,6 +3494,8 @@ function showLayoutDebug(force) {
     ['--app-h (latched)', getComputedStyle(document.documentElement).getPropertyValue('--app-h').trim() || 'unset'],
     ['raw viewport now', Math.round(window.visualViewport ? window.visualViewport.height : innerHeight) + 'px'],
     ['screen w x h', screen.width + ' x ' + screen.height],
+    ['using screen height?', String((matchMedia('(display-mode:standalone)').matches || navigator.standalone === true)
+        && Math.max(screen.width, screen.height) > Math.round(window.visualViewport ? window.visualViewport.height : innerHeight))],
     ['GAP below nav', (innerHeight - nav.bottom).toFixed(1) + 'px']
   ];
   const box = document.createElement('div');
