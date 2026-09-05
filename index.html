@@ -142,14 +142,21 @@ html[data-palette="graphite"][data-theme="light"]{
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{height:100%;overflow:hidden;overscroll-behavior:none;background:var(--field-2)}
-body{height:100%;overflow:hidden;color:var(--ink);overscroll-behavior:none;
+html{height:100%;overflow:hidden;overscroll-behavior:none;
+  background-color:var(--field-3);
+  background-image:
+    radial-gradient(120% 70% at 15% -5%, var(--field-1) 0%, transparent 60%),
+    radial-gradient(120% 80% at 100% 105%, var(--field-3) 0%, transparent 62%),
+    linear-gradient(176deg, var(--field-1) 0%, var(--field-2) 46%, var(--field-3) 100%);
+  background-attachment:scroll;background-repeat:no-repeat;background-size:100% 100%}
+body{height:100%;overflow:hidden;color:var(--ink);overscroll-behavior:none;background:transparent;
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI Variable Text','Segoe UI',Roboto,'Helvetica Neue',sans-serif;
   -webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;
-  font-variant-numeric:tabular-nums;background:var(--field-2)}
+  font-variant-numeric:tabular-nums}
 
 /* THE FIELD — fixed luminous ground; content moves, the field does not */
-#field{position:fixed;inset:0;z-index:0;pointer-events:none;
+#field{position:fixed;top:-2px;left:-2px;right:-2px;bottom:-2px;z-index:0;pointer-events:none;
+  min-height:100dvh;
   background:
     radial-gradient(120% 70% at 15% -5%, var(--field-1) 0%, transparent 60%),
     radial-gradient(120% 80% at 100% 105%, var(--field-3) 0%, transparent 62%),
