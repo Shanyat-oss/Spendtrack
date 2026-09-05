@@ -140,21 +140,21 @@ html[data-palette="graphite"][data-theme="light"]{
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 button,input,textarea,select{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
-html{height:100%;height:100dvh;overflow:hidden;overscroll-behavior:none;
+html{height:var(--app-h,100%);overflow:hidden;overscroll-behavior:none;
   background-color:var(--field-3);
   background-image:
     radial-gradient(120% 70% at 15% -5%, var(--field-1) 0%, transparent 60%),
     radial-gradient(120% 80% at 100% 105%, var(--field-3) 0%, transparent 62%),
     linear-gradient(176deg, var(--field-1) 0%, var(--field-2) 46%, var(--field-3) 100%);
   background-attachment:scroll;background-repeat:no-repeat;background-size:100% 100%}
-body{height:100%;height:100dvh;overflow:hidden;color:var(--ink);overscroll-behavior:none;background:transparent;
+body{height:var(--app-h,100%);overflow:hidden;color:var(--ink);overscroll-behavior:none;background:transparent;
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI Variable Text','Segoe UI',Roboto,'Helvetica Neue',sans-serif;
   -webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;
   font-variant-numeric:tabular-nums}
 
 /* THE FIELD — fixed luminous ground; content moves, the field does not */
-#field{position:fixed;top:-2px;left:-2px;right:-2px;bottom:-2px;z-index:0;pointer-events:none;
-  min-height:100dvh;
+#field{position:fixed;top:-2px;left:-2px;right:-2px;z-index:0;pointer-events:none;
+  height:calc(var(--app-h,100%) + 4px);
   background:
     radial-gradient(120% 70% at 15% -5%, var(--field-1) 0%, transparent 60%),
     radial-gradient(120% 80% at 100% 105%, var(--field-3) 0%, transparent 62%),
@@ -167,7 +167,8 @@ body{height:100%;height:100dvh;overflow:hidden;color:var(--ink);overscroll-behav
 input,textarea{caret-color:var(--accent)}
 ::-webkit-scrollbar{width:0;height:0}
 
-#app{position:fixed;inset:0;height:100dvh;z-index:1;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:none}
+#app{position:fixed;top:0;left:0;right:0;height:var(--app-h,100%);z-index:1;
+  display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:none}
 
 /* ── GLASS PRIMITIVES ───────────────────────────────────────── */
 .glass,#header,#bottom-nav,.chart-wrap,.cal-wrap,.budget-wrap,.settings-block,
@@ -216,7 +217,7 @@ input,textarea{caret-color:var(--accent)}
 .period-hero .day-stats{margin-top:10px}
 
 /* ── BOTTOM NAV: a second floating capsule, content passes under ── */
-#bottom-nav{position:fixed;left:12px;right:12px;bottom:calc(var(--safe-bot) + 10px);z-index:30;
+#bottom-nav{position:absolute;left:12px;right:12px;bottom:calc(var(--safe-bot) + 10px);z-index:30;
   height:var(--nav-h);display:flex;align-items:stretch;
   background:var(--glass);border-radius:var(--r-capsule);
   box-shadow:var(--shade-lift),inset 0 1px 0 var(--edge),inset 0 0 0 .5px var(--rim)}
@@ -408,12 +409,12 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 .toggle.on::after{transform:translateX(20px)}
 
 /* ── SHEETS ─────────────────────────────────────────────────── */
-.modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(6,30,32,.32);
+.modal-overlay{position:fixed;top:0;left:0;right:0;height:var(--app-h,100%);z-index:100;background:rgba(6,30,32,.32);
   display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .3s var(--ease);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .modal-overlay.open{opacity:1;pointer-events:all}
 .modal-sheet{width:100%;background:var(--glass-sheet);border-radius:28px 28px 0 0;
-  padding:var(--safe-top) 0 calc(var(--safe-bot) + 16px);max-height:100dvh;overflow-y:auto;
+  padding:var(--safe-top) 0 calc(var(--safe-bot) + 16px);max-height:var(--app-h,100%);overflow-y:auto;
   transform:translateY(100%);transition:transform .42s var(--ease);
   box-shadow:var(--shade-lift),inset 0 1px 0 var(--edge)}
 .modal-overlay.open .modal-sheet{transform:translateY(0)}
@@ -544,7 +545,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
   box-shadow:inset 0 1px 0 var(--edge),inset 0 0 0 .5px var(--rim)}
 .search-input{flex:1;background:transparent;border:none;outline:none;font-size:16px;color:var(--ink)}
 .search-input::placeholder{color:var(--ink-3)}
-#search-overlay{display:none;position:fixed;inset:0;padding-top:var(--safe-top);z-index:50;
+#search-overlay{display:none;position:fixed;top:0;left:0;right:0;height:var(--app-h,100%);padding-top:var(--safe-top);z-index:50;
   flex-direction:column;background:transparent}
 #search-overlay::before{content:'';position:absolute;inset:0;z-index:-1;
   background:
@@ -577,7 +578,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 /* Content arriving inside a view can afford a touch more. */
 .fade-up{animation:glassSettle .28s var(--ease) forwards}
 
-#toast{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bot) + 26px);left:50%;
+#toast{position:absolute;bottom:calc(var(--nav-h) + var(--safe-bot) + 26px);left:50%;
   transform:translateX(-50%) translateY(20px);background:var(--glass-strong);color:var(--ink);
   -webkit-backdrop-filter:var(--blur-deep);backdrop-filter:var(--blur-deep);
   padding:11px 22px;border-radius:var(--r-capsule);font-size:14px;font-weight:500;
@@ -650,6 +651,27 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
   box-shadow:var(--shade-lift);transition:transform .2s var(--ease),opacity .2s var(--ease)}
 .log-save:active{transform:scale(.985);opacity:.9}
 .log-save[disabled]{opacity:.45;box-shadow:none}
+
+/* ── Short screens: the Log column compresses rather than pushing Save under the
+      tab bar. Driven by the measured height, never by a viewport media query. ── */
+html.short .log-total{padding:11px 14px;min-height:44px}
+html.short .log-amount-wrap{padding:2px 0 0}
+html.short .log-amount{font-size:clamp(34px,12vw,46px)}
+html.short .log-guess{margin-top:8px;padding:7px 13px;min-height:40px}
+html.short .log-usuals{padding:0 0 6px}
+html.short .usual{min-height:40px;padding:7px 12px}
+html.short #view-log .calc-keypad{gap:6px;padding:0 0 6px}
+html.short #view-log .calc-key{height:46px;font-size:21px}
+html.short .log-save{padding:14px;margin-bottom:6px}
+
+html.very-short .log-amount{font-size:clamp(30px,11vw,38px)}
+html.very-short .log-guess{margin-top:6px}
+html.very-short #view-log .calc-key{height:40px;font-size:19px}
+html.very-short #view-log .calc-keypad{gap:5px}
+html.very-short .log-save{padding:12px}
+html.very-short .log-total{min-height:40px;padding:9px 13px}
+/* If it still cannot fit, scroll rather than hide the commit button. */
+html.very-short #view-log{min-height:0}
 .quickcat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 0 4px}
 
 @media(prefers-reduced-motion:reduce){
@@ -746,8 +768,8 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
     </button>
     <button id="fab" aria-label="Log an expense"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 5.5v13M5.5 12h13"/></svg></button>
   </nav>
+  <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 </div>
-<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <!-- QUICK CATEGORY PICKER -->
 <div class="modal-overlay" id="modal-quickcat">
@@ -3359,6 +3381,38 @@ document.getElementById('btn-theme').addEventListener('click', toggleTheme);
 // INIT
 // ═══════════════════════════════════════
 
+// iOS standalone misreports the viewport height in portrait until something forces
+// a recalculation. Measure the real visible height and publish it as --app-h.
+// visualViewport is the truthful source where it exists; innerHeight is the fallback.
+let _appH = 0, _appHRaf = null;
+function syncAppHeight() {
+  if (_appHRaf) return;                       // coalesce bursts into one write
+  _appHRaf = requestAnimationFrame(() => {
+    _appHRaf = null;
+    const vv = window.visualViewport;
+    const h = Math.round(vv ? vv.height : window.innerHeight);
+    // Ignore sub-pixel churn. Without this, a 1px oscillation feeds itself and the
+    // whole shell visibly pumps up and down.
+    if (!h || Math.abs(h - _appH) < 2) return;
+    _appH = h;
+    const root = document.documentElement;
+    root.style.setProperty('--app-h', h + 'px');
+    // The Log screen is the tallest layout in the app. On short screens it must
+    // compress, or Save ends up underneath the tab bar.
+    root.classList.toggle('short', h < 740);
+    root.classList.toggle('very-short', h < 640);
+  });
+}
+function watchAppHeight() {
+  syncAppHeight();
+  addEventListener('resize', syncAppHeight);
+  addEventListener('orientationchange', () => { syncAppHeight(); setTimeout(syncAppHeight, 250); });
+  addEventListener('pageshow', syncAppHeight);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', syncAppHeight);
+  // iOS reports the correct height only after the launch animation settles.
+  [80, 300, 800].forEach(t => setTimeout(syncAppHeight, t));
+}
+
 // Layout diagnostics. Visit the app with ?debug=1 to see what this device really
 // reports; nothing renders without that flag.
 function showLayoutDebug(force) {
@@ -3386,6 +3440,7 @@ function showLayoutDebug(force) {
     ['visualViewport.height', vv ? vv.height.toFixed(1) + 'px' : 'n/a'],
     ['screen.height', screen.height + 'px'],
     ['nav bottom edge', nav.bottom.toFixed(1) + 'px'],
+    ['--app-h', getComputedStyle(document.documentElement).getPropertyValue('--app-h').trim() || 'unset'],
     ['GAP below nav', (innerHeight - nav.bottom).toFixed(1) + 'px']
   ];
   const box = document.createElement('div');
@@ -3399,6 +3454,7 @@ function showLayoutDebug(force) {
 }
 
 async function init() {
+  watchAppHeight();
   // Restore saved theme (or match system preference)
   try { applyPalette(localStorage.getItem('spendtrack-palette') || 'teal'); } catch(e) { applyPalette('teal'); }
   try {
