@@ -41,12 +41,6 @@
   --nav-h:62px; --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
   --r-capsule:999px; --r-card:24px; --r-row:22px; --r-tile:14px; --r-sm:12px;
   --ease:cubic-bezier(.16,1,.3,1);
-  /* Legacy aliases kept so inline styles in markup still resolve */
-  --bg:transparent; --surface:var(--glass); --surface2:var(--glass-faint);
-  --border:transparent; --text:var(--ink); --text2:var(--ink-2); --text3:var(--ink-3);
-  --accent-light:var(--accent-soft); --accent-dark:var(--accent-ink); --accent-mid:var(--accent);
-  --red-light:var(--red-soft); --amber-light:var(--amber-soft);
-  --radius:var(--r-card); --radius-sm:var(--r-sm); --shadow:var(--shade);
 }
 @media(prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
@@ -142,6 +136,7 @@ html[data-palette="graphite"][data-theme="light"]{
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+button,input,textarea,select{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
 html{height:100%;overflow:hidden;overscroll-behavior:none;
   background-color:var(--field-3);
   background-image:
@@ -165,7 +160,7 @@ body{height:100%;overflow:hidden;color:var(--ink);overscroll-behavior:none;backg
 /* Browser surfaces — themed, not defaulted */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 ::selection{background:var(--accent-soft);color:var(--ink)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 input,textarea{caret-color:var(--accent)}
 ::-webkit-scrollbar{width:0;height:0}
 
@@ -182,7 +177,7 @@ input,textarea{caret-color:var(--accent)}
   display:flex;align-items:center;justify-content:space-between;
   background:var(--glass);border-radius:var(--r-capsule);
   box-shadow:var(--shade),inset 0 1px 0 var(--edge),inset 0 0 0 .5px var(--rim)}
-#header-title{font-size:16px;font-weight:600;letter-spacing:-.01em;color:var(--ink);
+#header-title{font-size:17px;font-weight:600;letter-spacing:-.01em;color:var(--ink);
   position:absolute;left:50%;transform:translateX(-50%)}
 .header-btn{background:none;border:none;color:var(--ink-2);width:44px;height:44px;
   display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;
@@ -206,10 +201,10 @@ input,textarea{caret-color:var(--accent)}
 
 /* ── THE DAY HERO: the comp's focal move ───────────────────── */
 .day-hero{padding:2px 20px 6px;text-align:center}
-.day-total{font-size:clamp(48px,15vw,64px);font-weight:250;letter-spacing:-.035em;
+.day-total{font-size:clamp(46px,15vw,64px);font-weight:250;letter-spacing:-.035em;
   line-height:1.02;color:var(--ink);font-variant-numeric:tabular-nums}
 .day-stats{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 18px;margin-top:12px;
-  font-size:12.5px;color:var(--ink-2);font-weight:500}
+  font-size:12px;color:var(--ink-2);font-weight:500}
 .day-stats b{font-weight:600;color:var(--ink)}
 .day-stats .is-over,.day-stats .is-over b{color:var(--red);font-weight:600}
 .period-hero{padding:6px 20px 10px;text-align:center}
@@ -254,7 +249,7 @@ input,textarea{caret-color:var(--accent)}
 #fab.on-log{color:var(--accent)}
 
 /* ── LIST: glass strips, gaps, no rules ────────────────────── */
-.section-header{padding:20px 22px 8px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.section-header{padding:20px 22px 8px;font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--ink-3)}
 .expense-item{margin:0 12px 8px;padding:12px 14px;border-radius:var(--r-row);
   display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--glass-faint);
   box-shadow:inset 0 1px 0 var(--edge),inset 0 0 0 .5px var(--rim);
@@ -264,10 +259,10 @@ input,textarea{caret-color:var(--accent)}
   display:flex;align-items:center;justify-content:center;
   background:var(--glass);box-shadow:inset 0 1px 0 var(--edge),inset 0 0 0 .5px var(--rim)}
 .expense-info{flex:1;min-width:0}
-.expense-name{font-size:15.5px;font-weight:500;letter-spacing:-.01em;color:var(--ink)}
-.expense-sub{font-size:12.5px;color:var(--ink-2);margin-top:2px;
+.expense-name{font-size:15px;font-weight:400;letter-spacing:-.01em;color:var(--ink)}
+.expense-sub{font-size:12px;color:var(--ink-2);margin-top:2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.expense-amount{font-size:16px;font-weight:600;letter-spacing:-.015em;color:var(--ink)}
+.expense-amount{font-size:16px;font-weight:700;letter-spacing:-.015em;color:var(--ink)}
 .recur-badge{display:inline-flex;align-items:center;vertical-align:-2px;margin-right:5px;
   color:var(--ink-3)}
 
@@ -303,7 +298,7 @@ input,textarea{caret-color:var(--accent)}
 .cal-grid-clip{overflow:hidden;transition:height .38s var(--ease)}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;transition:transform .38s var(--ease)}
 .cal-collapse-handle{display:flex;justify-content:center;padding-top:10px;cursor:pointer}
-.cal-collapse-bar{width:34px;height:4px;border-radius:2px;background:var(--ink-3);opacity:.5;
+.cal-collapse-bar{width:34px;height:4px;border-radius:var(--r-capsule);background:var(--ink-3);opacity:.5;
   transition:transform .25s var(--ease),opacity .25s var(--ease)}
 .cal-wrap.cal-collapsed .cal-collapse-bar{opacity:.9}
 .cal-dow{font-size:11px;font-weight:600;color:var(--ink-2);text-align:center;padding:2px 0 4px}
@@ -317,9 +312,9 @@ input,textarea{caret-color:var(--accent)}
   box-shadow:inset 0 1px 0 var(--edge),inset 0 0 0 .5px var(--rim)}
 .cal-cell.selected .cal-day-num{color:var(--ink);font-weight:700}
 .cal-cell.selected .cal-spend-amt{color:var(--ink)}
-.cal-day-num{font-size:14.5px;font-weight:500;color:var(--ink);position:relative}
+.cal-day-num{font-size:14px;font-weight:500;color:var(--ink);position:relative}
 .cal-spend-amt{font-size:11px;font-weight:600;color:var(--ink-3);margin-top:3px;line-height:1;
-  letter-spacing:-.2px;min-height:9px}
+  letter-spacing:-.015em;min-height:9px}
 
 .budget-wrap{background:var(--glass-faint);margin:0 12px 12px;border-radius:var(--r-card);padding:16px;
   box-shadow:var(--shade),inset 0 1px 0 var(--edge),inset 0 0 0 .5px var(--rim)}
@@ -350,8 +345,8 @@ input,textarea{caret-color:var(--accent)}
 .month-tile.future{opacity:.42}
 .month-tile .m-name{font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:5px}
 .month-tile .m-amount{font-size:15px;font-weight:600;letter-spacing:-.02em;color:var(--ink)}
-.month-tile .m-bar{height:3px;background:var(--glass);border-radius:2px;margin-top:9px;overflow:hidden}
-.month-tile .m-bar-fill{height:100%;background:var(--accent);border-radius:2px}
+.month-tile .m-bar{height:3px;background:var(--glass);border-radius:var(--r-capsule);margin-top:9px;overflow:hidden}
+.month-tile .m-bar-fill{height:100%;background:var(--ink-2);border-radius:var(--r-capsule)}
 .month-tile .m-delta{font-size:11px;margin-top:5px;color:var(--ink-3)}
 .month-tile .m-delta.up{color:var(--red)}
 .month-tile .m-delta.down{color:var(--accent)}
@@ -365,7 +360,7 @@ input,textarea{caret-color:var(--accent)}
 .budget-input-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
 .budget-input-label{font-size:12px;color:var(--ink-2);width:52px;flex-shrink:0;min-width:52px}
 .budget-cat-input{flex:1;min-width:0;background:var(--recess);border:none;border-radius:var(--r-sm);padding:12px;min-height:44px;
-  font-size:15px;font-weight:600;color:var(--ink);outline:none;transition:box-shadow .25s var(--ease)}
+  font-size:16px;font-weight:600;color:var(--ink);outline:none;transition:box-shadow .25s var(--ease)}
 .budget-cat-input:focus{box-shadow:inset 0 0 0 1.5px var(--accent)}
 .budget-cat-input::placeholder,input::placeholder,textarea::placeholder{color:var(--ink-3);opacity:1}
 .alert-row{display:flex;align-items:center;gap:8px}
@@ -390,15 +385,15 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 .btn-danger{background:var(--red-soft);color:var(--red)}
 
 .settings-section{margin:14px 12px 4px}
-.settings-section-title{font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:9px;padding-left:8px}
+.settings-section-title{font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--ink-3);margin-bottom:9px;padding-left:8px}
 .settings-block{background:var(--glass-faint);border-radius:var(--r-card);overflow:hidden;
   box-shadow:var(--shade),inset 0 1px 0 var(--edge),inset 0 0 0 .5px var(--rim)}
-.settings-row{background:none;display:flex;align-items:center;padding:14px 16px;cursor:pointer;
+.settings-row{background:none;display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;
   transition:background .2s var(--ease)}
 .settings-row:active{background:var(--glass)}
 .settings-row-icon{margin-right:12px;display:flex;align-items:center;color:var(--ink-2)}
-.settings-row-label{flex:1;font-size:15px;color:var(--ink)}
-.settings-row-value{font-size:14px;color:var(--ink-2);margin-right:6px}
+.settings-row-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px;color:var(--ink)}
+.settings-row-value{flex-shrink:0;font-size:14px;color:var(--ink-2);margin-right:6px}
 .settings-row-arrow{color:var(--ink-3);font-size:14px}
 
 .toggle{width:52px;height:32px;border-radius:var(--r-capsule);background:var(--glass);position:relative;
@@ -406,7 +401,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
   box-shadow:inset 0 0 0 .5px var(--rim)}
 .toggle.on{background:var(--accent)}
 .toggle::after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
-  background:#fff;transition:transform .3s var(--ease);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+  background:#fff;transition:transform .3s var(--ease);box-shadow:var(--shade)}
 .toggle.on::after{transform:translateX(20px)}
 
 /* ── SHEETS ─────────────────────────────────────────────────── */
@@ -419,7 +414,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
   transform:translateY(100%);transition:transform .42s var(--ease);
   box-shadow:var(--shade-lift),inset 0 1px 0 var(--edge)}
 .modal-overlay.open .modal-sheet{transform:translateY(0)}
-.modal-handle{width:36px;height:4px;background:var(--ink-3);opacity:.5;border-radius:2px;margin:10px auto 16px}
+.modal-handle{width:36px;height:4px;background:var(--ink-3);opacity:.5;border-radius:var(--r-capsule);margin:10px auto 16px}
 .modal-title{font-size:17px;font-weight:700;letter-spacing:-.015em;text-align:center;padding:0 16px 16px;color:var(--ink)}
 .modal-body{padding:0 16px}
 .modal-top{display:flex;align-items:center;justify-content:space-between;padding:0 16px 12px}
@@ -437,20 +432,18 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
   box-shadow:inset 0 0 0 .5px var(--rim);transition:box-shadow .25s var(--ease)}
 .form-input::placeholder{color:var(--ink-3)}
 .form-input:focus{box-shadow:inset 0 0 0 1.5px var(--accent)}
-.amount-input{font-size:36px;font-weight:600;letter-spacing:-.03em;text-align:center;background:transparent;
-  border:none;border-radius:0;padding:8px 16px;width:100%;color:var(--ink);outline:none}
 
 /* CALCULATOR */
 .calc-display-wrap{text-align:center;padding:8px 16px 2px}
 .calc-expr-line{font-size:13px;color:var(--ink-3);min-height:18px;word-break:break-all;margin-bottom:4px}
-.calc-display{font-size:44px;font-weight:300;letter-spacing:-.035em;color:var(--ink);line-height:1.1;min-height:52px}
+.calc-display{font-size:44px;font-weight:250;letter-spacing:-.035em;color:var(--ink);line-height:1.1;min-height:52px}
 .calc-keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:6px 16px 14px}
-.calc-key{background:var(--glass);border:none;border-radius:var(--r-sm);font-size:22px;font-weight:500;
+.calc-key{background:var(--glass);border:none;border-radius:var(--r-sm);font-size:23px;font-weight:500;
   color:var(--ink);padding:0;height:54px;cursor:pointer;display:flex;align-items:center;justify-content:center;
   -webkit-tap-highlight-color:transparent;touch-action:manipulation;
   box-shadow:inset 0 1px 0 var(--edge),inset 0 0 0 .5px var(--rim);
-  transition:background .18s var(--ease),transform .18s var(--ease)}
-.calc-key:active{background:var(--glass-strong);transform:scale(.95)}
+  transition:background .12s var(--ease),transform .12s var(--ease)}
+.calc-key:active{background:var(--glass-strong);transform:scale(.94)}
 .calc-key.op{color:var(--ink-2)}
 .calc-key.span2{grid-column:span 2}
 .calc-key.clr{color:var(--ink-2)}
@@ -473,7 +466,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 .sub-cat-row{overflow:hidden;max-height:0;opacity:0;transition:max-height .34s var(--ease),opacity .25s,margin-top .25s}
 .sub-cat-row.open{max-height:240px;opacity:1;margin-top:0}
 .sub-cat-inner{display:flex;flex-wrap:wrap;gap:6px;padding:12px 0 4px;margin-top:10px}
-.sub-cat-group-label{width:100%;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;
+.sub-cat-group-label{width:100%;display:flex;align-items:center;justify-content:space-between;font-size:12px;
   font-weight:600;color:var(--ink-2);margin-bottom:2px}
 .sub-cat-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px;
   border-radius:var(--r-tile);cursor:pointer;border:none;background:var(--glass);min-width:58px;
@@ -514,7 +507,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 .pay-methods{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
 .palette-chip{display:flex;align-items:center;gap:9px;padding:8px 15px 8px 9px;min-height:44px;
   border:none;border-radius:var(--r-capsule);cursor:pointer;background:var(--glass);color:var(--ink-2);
-  font-size:13.5px;font-family:inherit;
+  font-size:13px;font-family:inherit;
   box-shadow:inset 0 1px 0 var(--edge),inset 0 0 0 .5px var(--rim);
   transition:background .2s var(--ease),color .2s var(--ease),box-shadow .2s var(--ease)}
 .palette-chip.selected{background:var(--glass-strong);color:var(--ink);font-weight:600;
@@ -546,7 +539,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
   gap:9px;padding:10px 14px;color:var(--ink-3);
   -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
   box-shadow:inset 0 1px 0 var(--edge),inset 0 0 0 .5px var(--rim)}
-.search-input{flex:1;background:transparent;border:none;outline:none;font-size:15px;color:var(--ink)}
+.search-input{flex:1;background:transparent;border:none;outline:none;font-size:16px;color:var(--ink)}
 .search-input::placeholder{color:var(--ink-3)}
 #search-overlay{display:none;position:fixed;inset:0;padding-top:var(--safe-top);z-index:50;
   flex-direction:column;background:transparent}
@@ -573,11 +566,13 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 .view{display:none}
 .view.active{display:block}
 @keyframes glassSettle{
-  from{opacity:0;transform:translateY(14px);filter:blur(10px)}
-  to{opacity:1;transform:translateY(0);filter:blur(0)}
+  from{opacity:0;transform:translate3d(0,10px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
 }
-.fade-up{animation:glassSettle .55s var(--ease) forwards}
-.view.active{animation:glassSettle .45s var(--ease)}
+/* Routine navigation: acknowledgement, not choreography. */
+.view.active{animation:glassSettle .18s var(--ease)}
+/* Content arriving inside a view can afford a touch more. */
+.fade-up{animation:glassSettle .28s var(--ease) forwards}
 
 #toast{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bot) + 26px);left:50%;
   transform:translateX(-50%) translateY(20px);background:var(--glass-strong);color:var(--ink);
@@ -604,10 +599,18 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 .log-total .lt-value{font-weight:700;letter-spacing:-.01em}
 .log-total .lt-rest{margin-left:auto;color:var(--ink-2);display:flex;align-items:center;gap:6px}
 .log-total .lt-chev{color:var(--ink-3)}
+/* The save moment: the total lifts, brightens and settles as the new figure lands. */
+@keyframes totalLands{
+  0%{transform:translate3d(0,0,0) scale(1)}
+  32%{transform:translate3d(0,-3px,0) scale(1.045)}
+  100%{transform:translate3d(0,0,0) scale(1)}
+}
+.log-total.just-saved{animation:totalLands .5s var(--ease)}
+.log-total.just-saved .lt-value{color:var(--accent);transition:color .5s var(--ease)}
 .log-amount-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
   min-height:0;padding:8px 0 4px}
 .log-expr{font-size:14px;color:var(--ink-2);min-height:20px;letter-spacing:.01em}
-.log-amount{font-size:clamp(46px,15vw,62px);font-weight:250;letter-spacing:-.035em;line-height:1.05;
+.log-amount{font-size:clamp(46px,15vw,64px);font-weight:250;letter-spacing:-.035em;line-height:1.05;
   color:var(--ink);font-variant-numeric:tabular-nums}
 .log-amount.is-zero{color:var(--ink-3)}
 .log-guess{display:inline-flex;align-items:center;gap:8px;margin-top:14px;
@@ -629,14 +632,14 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 .log-usuals::-webkit-scrollbar{display:none}
 .usual{display:flex;align-items:center;gap:8px;white-space:nowrap;flex-shrink:0;
   padding:9px 14px;border:none;border-radius:var(--r-capsule);cursor:pointer;min-height:44px;
-  background:var(--glass);color:var(--ink);font-size:13.5px;
+  background:var(--glass);color:var(--ink);font-size:13px;
   box-shadow:inset 0 1px 0 var(--edge),inset 0 0 0 .5px var(--rim);
   transition:background .2s var(--ease),transform .2s var(--ease)}
 .usual:active{background:var(--glass-strong);transform:scale(.96)}
 .usual .u-ico{display:flex;color:var(--ink-2)}
 .usual .u-amt{font-weight:700;font-variant-numeric:tabular-nums}
 #view-log .calc-keypad{padding:0 0 10px;flex-shrink:0}
-#view-log .calc-key{height:58px;font-size:23px}
+#view-log .calc-key{height:58px}
 #view-log .calc-key.span2{grid-column:span 2}
 .log-save{width:100%;flex-shrink:0;margin-bottom:10px;
   padding:17px;border:none;border-radius:var(--r-capsule);cursor:pointer;
@@ -653,6 +656,9 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
     transition-duration:.12s!important}
   .modal-sheet{transition:opacity .12s!important;transform:none!important}
   .fade-up,.view.active{animation:none!important}
+  /* the save still announces itself, without the lift */
+  .log-total.just-saved{animation:none!important}
+  .log-total.just-saved .lt-value{color:var(--accent)}
   #fab:active,.expense-item:active,.calc-key:active,.usual:active{transform:none!important}
 }
 </style>
@@ -705,7 +711,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
       <div class="search-input-wrap" style="flex:1">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input class="search-input" id="search-input" type="search" placeholder="Search expenses…" autocomplete="off" inputmode="search">
-        <button id="btn-search-clear" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;display:none;line-height:1;padding:0 2px"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        <button id="btn-search-clear" class="header-btn" style="display:none;width:34px;height:34px"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
       </div>
       <button id="btn-search-cancel" style="background:none;border:none;color:var(--accent);font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap">Cancel</button>
     </div>
@@ -808,30 +814,30 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 
       <div class="form-group">
         <label class="form-label" for="exp-note">Note (optional)</label>
-        <input class="form-input" id="exp-note" type="text" placeholder="e.g. Lunch with client">
+        <input class="form-input" id="exp-note" type="text" maxlength="120" placeholder="e.g. Lunch with client">
       </div>
 
       <div class="form-group">
         <label class="form-label" for="exp-tag-input">Tags (optional)</label>
         <div id="tag-display" class="tag-input-wrap" style="margin-bottom:6px"></div>
-        <input class="form-input" id="exp-tag-input" type="text" placeholder="Type tag + Enter">
+        <input class="form-input" id="exp-tag-input" type="text" maxlength="24" placeholder="Type tag + Enter">
       </div>
 
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
-<div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);padding:12px 14px;border-radius:var(--radius-sm)">
+<div style="display:flex;align-items:center;justify-content:space-between;background:var(--glass-faint);padding:12px 14px;border-radius:var(--r-sm)">
           <div>
             <div style="font-size:14px;font-weight:500">Recurring expense</div>
-            <div style="font-size:11px;color:var(--text2)">Auto-add each month</div>
+            <div style="font-size:11px;color:var(--ink-2)">Auto-add each month</div>
           </div>
           <button class="toggle" id="recurring-toggle"></button>
         </div>
       </div>
 
-      <button id="btn-receipt" style="width:100%;padding:13px;border-radius:var(--radius-sm);background:var(--surface2);color:var(--text2);border:none;font-size:14px;cursor:pointer;margin-bottom:10px">📷 Scan receipt</button>
-      <button id="btn-delete-expense" style="display:none;width:100%;padding:13px;border-radius:var(--radius-sm);background:var(--red-light);color:var(--red);border:none;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px">🗑️ Delete this expense</button>
+      <button id="btn-receipt" style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--glass-faint);color:var(--ink-2);border:none;font-size:14px;cursor:pointer;margin-bottom:10px">Scan receipt</button>
+      <button id="btn-delete-expense" style="display:none;width:100%;padding:13px;border-radius:var(--r-sm);background:var(--red-soft);color:var(--red);border:none;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px">Delete this expense</button>
     </div>
     <div class="modal-footer">
-      <button id="expense-save" style="width:100%;padding:15px;background:var(--accent);color:var(--field-1);font-weight:700;font-size:16px;border:none;border-radius:var(--radius);cursor:pointer;letter-spacing:.2px">Save Expense</button>
+      <button id="expense-save" style="width:100%;padding:15px;background:var(--accent);color:var(--field-1);font-weight:700;font-size:16px;border:none;border-radius:var(--r-card);cursor:pointer;letter-spacing:.01em">Save Expense</button>
     </div>
   </div>
 </div>
@@ -843,7 +849,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
     <div class="modal-top">
       <button class="modal-close-btn" id="cat-modal-cancel">✕</button>
       <div class="modal-title">Add Category</div>
-      <button class="modal-close-btn" id="cat-modal-save" style="background:var(--accent);color:var(--field-1);font-weight:700;font-size:13px;width:auto;padding:0 14px;border-radius:20px">Add</button>
+      <button class="btn-sm btn-primary" id="cat-modal-save">Add</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
@@ -852,7 +858,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
       </div>
       <div class="form-group">
         <label class="form-label" for="new-cat-name">Category name</label>
-        <input class="form-input" id="new-cat-name" type="text" placeholder="e.g. Gym">
+        <input class="form-input" id="new-cat-name" type="text" maxlength="24" placeholder="e.g. Gym">
       </div>
       <div class="form-group">
         <label class="form-label" for="new-cat-main">Group</label>
@@ -869,9 +875,9 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
     <div class="modal-top" id="manage-cats-top">
       <button class="modal-close-btn" id="manage-cats-close">✕</button>
       <div class="modal-title" style="padding:0">Manage Categories</div>
-      <button class="modal-close-btn" id="manage-cats-reset" style="font-size:11px;width:auto;padding:0 10px;border-radius:20px;color:var(--text2)">Reset</button>
+      <button class="btn-sm btn-ghost" id="manage-cats-reset" style="flex:0 0 auto;padding:8px 14px">Reset</button>
     </div>
-    <div style="padding:0 16px 8px;font-size:12px;color:var(--text2)" id="manage-cats-hint">Hold any icon to enter edit mode</div>
+    <div style="padding:0 16px 8px;font-size:12px;color:var(--ink-2)" id="manage-cats-hint">Hold any icon to enter edit mode</div>
     <div class="modal-body" id="manage-cats-body" style="padding-bottom:20px"></div>
   </div>
 </div>
@@ -892,7 +898,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
     <div class="modal-top">
       <div style="width:30px"></div>
       <div class="modal-title" style="color:var(--amber)">⚠️ Budget Alert</div>
-      <button class="modal-close-btn" id="budget-alert-ok" style="background:var(--accent);color:var(--field-1);font-weight:700;font-size:13px;width:auto;padding:0 14px;border-radius:20px">OK</button>
+      <button class="btn-sm btn-primary" id="budget-alert-ok">OK</button>
     </div>
     <div class="modal-body">
       <div id="budget-alert-body" style="font-size:15px;line-height:1.6;padding-bottom:16px"></div>
@@ -907,7 +913,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
     <div class="modal-top">
       <button class="modal-close-btn" id="budget-cancel">✕</button>
       <div class="modal-title">Monthly Budget</div>
-      <button class="modal-close-btn" id="budget-save" style="background:var(--accent);color:var(--field-1);font-weight:700;font-size:13px;width:auto;padding:0 14px;border-radius:20px">Save</button>
+      <button class="btn-sm btn-primary" id="budget-save">Save</button>
     </div>
     <div class="modal-body">
       <div class="form-group"><label class="form-label" for="budget-overall">Overall monthly limit (S$)</label><input class="form-input" id="budget-overall" type="number" min="0" step="50" placeholder="3000" inputmode="decimal"></div>
@@ -933,17 +939,16 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
         <div class="form-group"><label class="form-label" for="export-to">To</label><input class="form-input" id="export-to" type="date"></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px">
-        <button class="btn-sm btn-primary" id="export-csv" style="padding:13px">📊 Download CSV (Excel)</button>
-        <button class="btn-sm btn-primary" id="export-json" style="padding:13px">📦 Download JSON (Cowork)</button>
-        <button class="btn-sm btn-primary" id="export-ai" style="padding:13px">🤖 Export for AI (Claude)</button>
-        <button class="btn-sm btn-primary" id="export-pdf" style="padding:13px">📄 Download PDF Report</button>
+        <button class="btn-sm btn-primary" id="export-csv" style="padding:13px">Download CSV (Excel)</button>
+        <button class="btn-sm btn-primary" id="export-json" style="padding:13px">Download JSON (backup)</button>
+        <button class="btn-sm btn-primary" id="export-ai" style="padding:13px">Export for AI (Claude)</button>
+        <button class="btn-sm btn-primary" id="export-pdf" style="padding:13px">Download PDF report</button>
       </div>
-      <div style="border-top:.5px solid var(--border);margin:4px 0 10px"></div>
-      <button class="btn-sm btn-ghost" id="import-json-btn" style="padding:13px;border:1.5px dashed var(--border)">📥 Restore from JSON backup</button>
+      <button class="btn-sm btn-ghost" id="import-json-btn" style="padding:13px;box-shadow:inset 0 0 0 1.5px var(--rim)">Restore from JSON backup</button>
       <input type="file" id="import-json-input" accept=".json" style="display:none">
-      <div style="background:var(--amber-light);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px">
-        <div style="font-size:12px;font-weight:600;color:var(--amber);margin-bottom:4px">🤖 Claude Cowork Auto-export</div>
-        <div style="font-size:12px;color:var(--text2);line-height:1.5">Schedule automatic JSON exports via Claude Cowork — see INSTALL.md for setup.</div>
+      <div style="background:var(--amber-soft);border-radius:var(--r-sm);padding:12px;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:600;color:var(--amber);margin-bottom:4px">Claude Cowork Auto-export</div>
+        <div style="font-size:12px;color:var(--ink-2);line-height:1.5">Schedule automatic JSON exports via Claude Cowork — see INSTALL.md for setup.</div>
       </div>
       <button class="btn-sm btn-ghost" id="export-cancel" style="padding:13px;margin-top:4px">Close</button>
     </div>
@@ -957,17 +962,17 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
     <div class="modal-top">
       <button class="modal-close-btn" id="receipt-cancel">✕</button>
       <div class="modal-title">Scan Receipt</div>
-      <button class="modal-close-btn" id="receipt-use" style="display:none;background:var(--accent);color:var(--field-1);font-weight:700;font-size:13px;width:auto;padding:0 12px;border-radius:20px">Use</button>
+      <button class="btn-sm btn-primary" id="receipt-use" style="display:none">Use</button>
     </div>
     <div class="modal-body">
-      <img id="receipt-preview" alt="Receipt" style="width:100%;max-height:240px;object-fit:contain;border-radius:var(--radius-sm);margin-bottom:12px;display:none">
+      <img id="receipt-preview" alt="Receipt" style="width:100%;max-height:240px;object-fit:contain;border-radius:var(--r-sm);margin-bottom:12px;display:none">
       <div id="receipt-result" style="display:none;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px">Confirm amount</div>
+        <div style="font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:6px">Confirm amount</div>
         <input class="form-input" id="receipt-confirm-amount" type="number" step="0.01" placeholder="Enter total from receipt" inputmode="decimal">
       </div>
       <input type="file" id="receipt-file-input" accept="image/*" capture="environment" style="display:none">
-      <button class="btn-sm btn-primary" id="receipt-camera" style="padding:13px;margin-bottom:10px">📷 Open Camera</button>
-      <button class="btn-sm btn-ghost" id="receipt-gallery" style="padding:13px">🖼️ Choose from Gallery</button>
+      <button class="btn-sm btn-primary" id="receipt-camera" style="padding:13px;margin-bottom:10px">Open Camera</button>
+      <button class="btn-sm btn-ghost" id="receipt-gallery" style="padding:13px">Choose from gallery</button>
     </div>
   </div>
 </div>
@@ -1029,6 +1034,7 @@ const ICON_PATHS = {
   report:'<path d="M4.4 3.6v16.8h15.2"/><path d="M8 16.4v-4M12 16.4v-7M16 16.4v-10"/>',
   tag:'<path d="M4 12.6V5.6A1.6 1.6 0 0 1 5.6 4h7l7.6 7.6a1.6 1.6 0 0 1 0 2.2l-6.4 6.4a1.6 1.6 0 0 1-2.2 0z"/><path d="M8.4 8.4h.2"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
+  search:'<circle cx="11" cy="11" r="7.2"/><path d="m20.4 20.4-4.2-4.2"/>',
   upload:'<path d="M12 15.6V4.4M8.2 8.2 12 4.4l3.8 3.8"/><path d="M4.6 15v3.6a1.5 1.5 0 0 0 1.5 1.5h11.8a1.5 1.5 0 0 0 1.5-1.5V15"/>',
   download:'<path d="M12 4.4v11.2M8.2 11.8 12 15.6l3.8-3.8"/><path d="M4.6 15v3.6a1.5 1.5 0 0 0 1.5 1.5h11.8a1.5 1.5 0 0 0 1.5-1.5V15"/>',
   trash:'<path d="M4.6 6.6h14.8M9.6 6.6V5a1.5 1.5 0 0 1 1.5-1.5h1.8A1.5 1.5 0 0 1 14.4 5v1.6"/><path d="M6.6 6.6 7.5 19a1.5 1.5 0 0 0 1.5 1.4h6a1.5 1.5 0 0 0 1.5-1.4l.9-12.4"/><path d="M10.4 10.2v6M13.6 10.2v6"/>',
@@ -1733,7 +1739,7 @@ function renderChart() {
       days.forEach(date => {
         const dayExp = expenses.filter(e=>e.date===date);
         const dayTotal = dayExp.reduce((s,e)=>s+(+e.amount||0),0);
-        html += `<div class="section-header" style="font-size:12px;padding:10px 16px 4px;color:var(--text2)">${fmt.date(date)} — <span style="color:var(--text)">${fmt.currency(dayTotal)}</span></div>`;
+        html += `<div class="section-header" style="font-size:12px;padding:10px 16px 4px;color:var(--ink-2)">${fmt.date(date)} — <span style="color:var(--ink)">${fmt.currency(dayTotal)}</span></div>`;
         dayExp.sort((a,b)=>b.amount-a.amount).forEach(e => { html+=expenseItemHTML(e); });
       });
     } else {
@@ -1794,8 +1800,20 @@ function renderChart() {
   }
 }
 
+// Charts are the only part of this app that needs the network. Say so plainly
+// rather than throwing, and keep every number on the screen readable without them.
+function chartUnavailable(canvas) {
+  const host = canvas.parentElement;
+  if (!host) return;
+  host.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;
+    height:100%;min-height:120px;padding:20px;text-align:center;font-size:13px;
+    line-height:1.5;color:var(--ink-2)">The chart needs a connection the first time it loads.
+    Your figures below are all here.</div>`;
+}
+
 function renderDonut(sorted, total) {
   const canvas = document.getElementById('donut-chart'); if(!canvas)return;
+  if (typeof Chart === 'undefined') { chartUnavailable(canvas); return; }
   if(State.charts.donut){State.charts.donut.destroy();}
   State.charts.donut = new Chart(canvas,{
     type:'doughnut',
@@ -1812,6 +1830,7 @@ function renderDonut(sorted, total) {
 
 function renderTrend(byMonth) {
   const canvas = document.getElementById('trend-chart'); if(!canvas)return;
+  if (typeof Chart === 'undefined') { chartUnavailable(canvas); return; }
   if(State.charts.trend)State.charts.trend.destroy();
   const isDark = (document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light')) === 'dark';
   const textColor = isDark?'rgba(232,245,242,.64)':'rgba(11,22,24,.66)';
@@ -1863,27 +1882,27 @@ async function renderGoals() {
 
   let html = `
   <div style="padding:16px 16px 8px">
-    <div style="font-size:20px;font-weight:700;margin-bottom:2px">Budget</div>
-    <div style="font-size:13px;color:var(--text2)">${monthLabel}</div>
+    <div style="font-size:17px;font-weight:700;letter-spacing:-.015em;margin-bottom:2px">Budget</div>
+    <div style="font-size:13px;color:var(--ink-2)">${monthLabel}</div>
   </div>
 
-  <div style="margin:0 16px 14px;background:var(--surface);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)">
+  <div style="margin:0 16px 14px;background:var(--glass);border-radius:var(--r-card);padding:16px;box-shadow:var(--shade)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       <div style="font-size:13px;font-weight:600">Overall this month</div>
-      <div style="font-size:13px;color:var(--text2)">${fmt.currency(totalSpent)}${overall?' of '+fmt.currency(overall):''}</div>
+      <div style="font-size:13px;color:var(--ink-2)">${fmt.currency(totalSpent)}${overall?' of '+fmt.currency(overall):''}</div>
     </div>
-    <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-bottom:6px">
-      <div style="height:100%;border-radius:3px;background:var(--${overallClass==='over'?'red':overallClass==='warn'?'amber':'accent'});width:${overall?overallPct:0}%;transition:width .3s"></div>
+    <div class="budget-bar-row" style="height:6px;margin-bottom:6px">
+      <div style="height:100%;border-radius:var(--r-capsule);background:var(--${overallClass==='over'?'red':overallClass==='warn'?'amber':'accent'});width:${overall?overallPct:0}%;transition:width .3s"></div>
     </div>
     ${totalSaved>0?`<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px">Left this month: ${fmt.currency(totalSaved)}</div>`:''}
     <div style="display:flex;align-items:center;gap:8px;margin-top:${totalSaved>0?'0':'10px'}">
-      <label style="font-size:12px;color:var(--text2);flex-shrink:0">Monthly limit S$</label>
+      <label style="font-size:12px;color:var(--ink-2);flex-shrink:0">Monthly limit S$</label>
       <input id="budget-overall-inline" class="budget-cat-input" type="number" min="0" step="100" inputmode="decimal" placeholder="e.g. 3000" value="${overall||''}">
     </div>
   </div>
 
   <div style="margin:0 16px 6px;font-size:13px;font-weight:600;color:var(--ink-2)">Categories</div>
-  <div style="background:var(--surface);border-radius:var(--radius);margin:0 16px;overflow:hidden;box-shadow:var(--shadow)">
+  <div style="background:var(--glass);border-radius:var(--r-card);margin:0 16px;overflow:hidden;box-shadow:var(--shade)">
   ${activeMains.map(mc => {
     const spent = mainSpend[mc.id] || 0;
     const limit = mainCatBudgets[mc.id] || 0;
@@ -1894,7 +1913,7 @@ async function renderGoals() {
       <div class="budget-cat-header">
         <div class="budget-cat-icon">${icon(mc.id,22)}</div>
         <div class="budget-cat-name">${mc.name}</div>
-        <div class="budget-cat-spent" style="color:${pct>90?'var(--red)':pct>70?'var(--amber)':'var(--text2)'}">${fmt.currency(spent)}${limit?' / '+fmt.currency(limit):''}</div>
+        <div class="budget-cat-spent" style="color:${pct>90?'var(--red)':pct>70?'var(--amber)':'var(--ink-2)'}">${fmt.currency(spent)}${limit?' / '+fmt.currency(limit):''}</div>
       </div>
       ${limit ? `<div class="budget-bar-row"><div class="budget-bar-fill-sm ${barClass}" style="width:${pct}%"></div></div>` : ''}
       ${limit ? (() => { const saved=limit-spent; return `<div style="font-size:11px;font-weight:600;color:${saved>=0?'var(--ink-2)':'var(--red)'};text-align:right;margin-bottom:8px">${saved>=0?fmt.currency(saved)+' left':'Over by '+fmt.currency(-saved)}</div>`; })() : ''}
@@ -1912,7 +1931,7 @@ async function renderGoals() {
   </div>
 
   <div style="padding:16px">
-    <button id="budget-save-btn" style="width:100%;padding:14px;background:var(--accent);color:var(--field-1);border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:700;cursor:pointer">Save Budget</button>
+    <button id="budget-save-btn" style="width:100%;padding:14px;background:var(--accent);color:var(--field-1);border:none;border-radius:var(--r-sm);font-size:16px;font-weight:700;letter-spacing:.01em;cursor:pointer">Save Budget</button>
   </div>
   <div style="height:8px"></div>`;
 
@@ -2005,7 +2024,7 @@ function renderSettings() {
         <span class="settings-row-icon">${icon('download',20)}</span><span class="settings-row-label">Import from JSON</span><span class="settings-row-arrow">›</span>
       </div>
     </div>
-    <div style="padding:12px 16px 0;font-size:13px;line-height:1.5;color:var(--ink-2)">
+    <div style="padding:12px 16px 0;font-size:14px;line-height:1.5;color:var(--ink)">
       Everything is stored on this phone only. There is no cloud copy, and no one else can see it —
       including me. If you clear your browser storage or reinstall without exporting, it is gone.
       <div style="margin-top:6px;font-weight:600;color:var(--ink)">${lastExportLine()}</div>
@@ -2230,8 +2249,8 @@ function renderManageCats() {
   if (wiggle && !doneBtn) {
     doneBtn = document.createElement('button');
     doneBtn.id = 'manage-cats-done';
-    doneBtn.className = 'modal-close-btn';
-    doneBtn.style.cssText = 'background:var(--accent);color:var(--field-1);font-weight:700;font-size:13px;width:auto;padding:0 14px;border-radius:20px';
+    doneBtn.className = 'btn-sm btn-primary';
+    doneBtn.style.cssText = 'flex:0 0 auto;padding:8px 14px';
     doneBtn.textContent = 'Done';
     doneBtn.addEventListener('click', () => { State.catWiggleMode=false; renderManageCats(); });
     top.appendChild(doneBtn);
@@ -2262,7 +2281,7 @@ function renderManageCats() {
   });
 
   // Add category button at bottom
-  html += `<button onclick="openAddCategoryModal()" style="width:100%;padding:13px;border-radius:var(--radius-sm);background:var(--accent-light);color:var(--accent-dark);border:none;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px">➕ Add new category</button>`;
+  html += `<button onclick="openAddCategoryModal()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--accent-soft);color:var(--accent-ink);border:none;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px">➕ Add new category</button>`;
 
   body.innerHTML = html;
 
@@ -2303,9 +2322,9 @@ function renderManageCats() {
 function renderMoveToCat() {
   const cat = State.categories.find(c=>c.id===State.movingCatId);
   const body = document.getElementById('move-cat-body');
-  body.innerHTML = cat ? `<p style="font-size:14px;color:var(--text2);margin-bottom:16px">Move <strong>${cat.icon} ${cat.name}</strong> to:</p>` : '';
+  body.innerHTML = cat ? `<p style="font-size:14px;color:var(--ink-2);margin-bottom:16px">Move <strong>${cat.icon} ${cat.name}</strong> to:</p>` : '';
   body.innerHTML += MAIN_CATEGORIES.map(mc =>
-    `<div onclick="moveCatTo('${mc.id}')" style="padding:14px 16px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;font-size:15px;display:flex;align-items:center;gap:10px">
+    `<div onclick="moveCatTo('${mc.id}')" style="padding:14px 16px;background:var(--glass-faint);border-radius:var(--r-sm);margin-bottom:8px;cursor:pointer;font-size:15px;display:flex;align-items:center;gap:10px">
       <span style="font-size:22px">${mc.icon}</span> ${mc.name}
     </div>`
   ).join('');
@@ -2438,7 +2457,14 @@ This cannot be undone.`))return;
 });
 document.getElementById('btn-receipt').addEventListener('click', () => openModal('modal-receipt'));
 
+let _sheetSaving = false;
 async function saveExpense() {
+  if (_sheetSaving) return;
+  _sheetSaving = true;
+  try { await _saveExpense(); } finally { _sheetSaving = false; }
+}
+
+async function _saveExpense() {
   const amount = parseFloat(document.getElementById('exp-amount').value);
   if(!amount||amount<=0){ toast('Please enter an amount'); return; }
   if(!State.selectedCategory){ toast('Please select a category'); return; }
@@ -2469,7 +2495,7 @@ window.openBudgetModal = function() {
   const budget = State.budgets[State.currentMonthKey]||{};
   document.getElementById('budget-overall').value = budget.overall||'';
   const catFields = document.getElementById('budget-cat-fields');
-  catFields.innerHTML = `<div class="form-group" style="margin-top:4px"><label class="form-label" style="color:var(--text2)">Per-category limits (optional)</label></div>` +
+  catFields.innerHTML = `<div class="form-group" style="margin-top:4px"><label class="form-label" style="color:var(--ink-2)">Per-category limits (optional)</label></div>` +
     State.categories.map(c=>`<div class="form-group"><label class="form-label">${c.icon} ${c.name}</label><input class="form-input" data-cat="${c.id}" type="number" min="0" placeholder="No limit" value="${budget.cats?.[c.id]||''}"></div>`).join('');
   openModal('modal-budget');
 };
@@ -2491,7 +2517,7 @@ document.getElementById('budget-alert-ok').addEventListener('click', () => close
 
 function showBudgetAlert(lines) {
   document.getElementById('budget-alert-body').innerHTML =
-    lines.map(l=>`<div style="padding:8px 0;border-bottom:.5px solid var(--border)">${l}</div>`).join('');
+    lines.map(l=>`<div style="padding:8px 0">${l}</div>`).join('');
   openModal('modal-budget-alert');
 }
 
@@ -2522,7 +2548,7 @@ async function checkBudgetAlerts(savedExp) {
     // Also alert at 100%
     if (pct >= 100 && prevPct < 100) {
       const mc = getMain(mcId);
-      alerts.push(`🚨 <strong>${mc.name} budget exceeded!</strong> Spent ${fmt.currency(spent)} of ${fmt.currency(limit)}`);
+      alerts.push(`<strong>${mc.name} budget exceeded!</strong> Spent ${fmt.currency(spent)} of ${fmt.currency(limit)}`);
     }
   });
   if (alerts.length) setTimeout(() => showBudgetAlert(alerts), 400);
@@ -2847,14 +2873,22 @@ async function renderSearchResults(query) {
   }
   if (State.filterCategory) results = results.filter(e => e.category === State.filterCategory);
   results = results.sort((a, b) => b.date.localeCompare(a.date));
+  // Years of history can match a one-letter query; render a readable page of it
+  // rather than thousands of rows, and say what was left out.
+  const SEARCH_CAP = 200;
+  const truncated = results.length > SEARCH_CAP;
+  const totalMatches = results.length;
+  if (truncated) results = results.slice(0, SEARCH_CAP);
   if (!results.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><h3>${query ? 'No results' : 'Start typing to search'}</h3><p>${query ? 'Try a different keyword or category.' : 'Search by note, category, or tag.'}</p></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">${icon('search',52)}</div><h3>${query ? 'No results' : 'Start typing to search'}</h3><p>${query ? 'Try a different keyword or category.' : 'Search by note, category, or tag.'}</p></div>`;
     return;
   }
   // Group by date
   const byDate = {};
   results.forEach(e => { if (!byDate[e.date]) byDate[e.date]=[]; byDate[e.date].push(e); });
-  let html = `<div style="padding:8px 16px 2px;font-size:12px;color:var(--text3)">${results.length} result${results.length!==1?'s':''}</div>`;
+  let html = `<div style="padding:8px 16px 2px;font-size:12px;color:var(--ink-3)">${truncated
+      ? `Showing the ${SEARCH_CAP} most recent of ${totalMatches} matches — narrow the search to see older ones`
+      : `${totalMatches} result${totalMatches!==1?'s':''}`}</div>`;
   Object.keys(byDate).sort((a,b)=>b.localeCompare(a)).forEach(date => {
     html += `<div class="section-header">${fmt.date(date)}</div>`;
     html += byDate[date].map(e => expenseItemHTML(e)).join('');
@@ -3004,7 +3038,15 @@ async function renderLog() {
   }));
 }
 
+let _logSaving = false;
 async function saveFromLog(usual) {
+  // The whole design is one-tap commit, so a double tap is a real double record.
+  if (_logSaving) return;
+  _logSaving = true;
+  try { await _saveFromLog(usual); } finally { _logSaving = false; }
+}
+
+async function _saveFromLog(usual) {
   const memo = await readHabits();
   const isUsual = usual && usual.category;
   const amount = isUsual ? usual.amount : logAmount();
@@ -3037,6 +3079,8 @@ async function saveFromLog(usual) {
   let todays = [];
   try { todays = await DB.getByDateRange(todayIso, todayIso); } catch(e) {}
   const total = todays.reduce((s,e)=>s+(+e.amount||0),0);
+  const prevTotal = Math.max(0, total - (+exp.amount||0));
+  countTodayTotal(prevTotal, total);
   toast(`Saved · ${fmt.currency(total)} today`, 6000, {
     label: 'Undo',
     onClick: async () => {
@@ -3054,6 +3098,32 @@ async function saveFromLog(usual) {
 function invalidateMemo() {
   State._memo = null;
   invalidateCalCache();
+}
+
+// Count the Today total from its old value to its new one. Reduced motion keeps the
+// meaning — the figure still changes and still highlights — and drops the travel.
+function countTodayTotal(from, to) {
+  const pill = document.getElementById('log-total');
+  const el = pill && pill.querySelector('.lt-value');
+  if (!el) return;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  pill.classList.add('just-saved');
+  setTimeout(() => pill.classList.remove('just-saved'), 900);
+  if (reduced || !(to > from)) { el.textContent = fmt.currency(to); return; }
+  const dur = 420, t0 = performance.now();
+  // The figure must be correct even if rAF never fires (backgrounded tab, throttled
+  // engine). The animation is a nicety; the number is not.
+  let done = false;
+  const settle = () => { if (!done) { done = true; el.textContent = fmt.currency(to); } };
+  setTimeout(settle, dur + 150);
+  const step = now => {
+    if (done) return;
+    const k = Math.min(1, (now - t0) / dur);
+    const eased = 1 - Math.pow(1 - k, 3);          // exponential deceleration
+    el.textContent = fmt.currency(from + (to - from) * eased);
+    if (k < 1) requestAnimationFrame(step); else settle();
+  };
+  requestAnimationFrame(step);
 }
 
 async function openQuickCat() {
