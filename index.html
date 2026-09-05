@@ -3384,16 +3384,27 @@ document.getElementById('btn-theme').addEventListener('click', toggleTheme);
 // iOS standalone misreports the viewport height in portrait until something forces
 // a recalculation. Measure the real visible height and publish it as --app-h.
 // visualViewport is the truthful source where it exists; innerHeight is the fallback.
-let _appH = 0, _appHRaf = null;
+let _appH = 0, _appHRaf = null, _maxH = 0, _orient = null;
 function syncAppHeight() {
   if (_appHRaf) return;                       // coalesce bursts into one write
   _appHRaf = requestAnimationFrame(() => {
     _appHRaf = null;
     const vv = window.visualViewport;
-    const h = Math.round(vv ? vv.height : window.innerHeight);
-    // Ignore sub-pixel churn. Without this, a 1px oscillation feeds itself and the
-    // whole shell visibly pumps up and down.
-    if (!h || Math.abs(h - _appH) < 2) return;
+    const raw = Math.round(vv ? vv.height : window.innerHeight);
+    if (!raw) return;
+
+    // Within one orientation the screen does not actually change size. iOS, however,
+    // reports two different heights as its status-bar overlay toggles, and following
+    // both is what makes the whole shell pump up and down. Latch to the tallest
+    // height seen in this orientation and ignore the smaller twin.
+    const orient = window.innerWidth > window.innerHeight ? 'land' : 'port';
+    if (orient !== _orient) { _orient = orient; _maxH = 0; }
+    // Never exceed the physical screen: a bogus large report should not stretch the app.
+    const ceiling = Math.max(screen.height, screen.width) || raw;
+    _maxH = Math.min(Math.max(_maxH, raw), ceiling);
+    const h = _maxH;
+
+    if (Math.abs(h - _appH) < 2) return;
     _appH = h;
     const root = document.documentElement;
     root.style.setProperty('--app-h', h + 'px');
@@ -3406,7 +3417,10 @@ function syncAppHeight() {
 function watchAppHeight() {
   syncAppHeight();
   addEventListener('resize', syncAppHeight);
-  addEventListener('orientationchange', () => { syncAppHeight(); setTimeout(syncAppHeight, 250); });
+  addEventListener('orientationchange', () => {
+    _orient = null; _maxH = 0;                 // a real size change: start measuring again
+    syncAppHeight(); [60, 250, 600].forEach(t => setTimeout(syncAppHeight, t));
+  });
   addEventListener('pageshow', syncAppHeight);
   if (window.visualViewport) window.visualViewport.addEventListener('resize', syncAppHeight);
   // iOS reports the correct height only after the launch animation settles.
@@ -3440,7 +3454,9 @@ function showLayoutDebug(force) {
     ['visualViewport.height', vv ? vv.height.toFixed(1) + 'px' : 'n/a'],
     ['screen.height', screen.height + 'px'],
     ['nav bottom edge', nav.bottom.toFixed(1) + 'px'],
-    ['--app-h', getComputedStyle(document.documentElement).getPropertyValue('--app-h').trim() || 'unset'],
+    ['--app-h (latched)', getComputedStyle(document.documentElement).getPropertyValue('--app-h').trim() || 'unset'],
+    ['raw viewport now', Math.round(window.visualViewport ? window.visualViewport.height : innerHeight) + 'px'],
+    ['screen w x h', screen.width + ' x ' + screen.height],
     ['GAP below nav', (innerHeight - nav.bottom).toFixed(1) + 'px']
   ];
   const box = document.createElement('div');
