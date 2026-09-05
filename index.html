@@ -132,19 +132,22 @@ html[data-palette="graphite"][data-theme="light"]{
 }
 
 @media all and (display-mode:standalone){
-  :root{--safe-top:max(env(safe-area-inset-top,44px),44px);--safe-bot:max(env(safe-area-inset-bottom,34px),34px);}
+  /* Trust what iOS reports. Only guarantee a minimum where a zero inset would put
+     content against the physical edge — never pad out space the device is not
+     actually reserving, which is what produced dead space under the tab bar. */
+  :root{--safe-top:max(env(safe-area-inset-top,0px),12px);--safe-bot:max(env(safe-area-inset-bottom,0px),8px);}
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 button,input,textarea,select{font-family:inherit;font-variant-numeric:inherit;letter-spacing:inherit}
-html{height:100%;overflow:hidden;overscroll-behavior:none;
+html{height:100%;height:100dvh;overflow:hidden;overscroll-behavior:none;
   background-color:var(--field-3);
   background-image:
     radial-gradient(120% 70% at 15% -5%, var(--field-1) 0%, transparent 60%),
     radial-gradient(120% 80% at 100% 105%, var(--field-3) 0%, transparent 62%),
     linear-gradient(176deg, var(--field-1) 0%, var(--field-2) 46%, var(--field-3) 100%);
   background-attachment:scroll;background-repeat:no-repeat;background-size:100% 100%}
-body{height:100%;overflow:hidden;color:var(--ink);overscroll-behavior:none;background:transparent;
+body{height:100%;height:100dvh;overflow:hidden;color:var(--ink);overscroll-behavior:none;background:transparent;
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI Variable Text','Segoe UI',Roboto,'Helvetica Neue',sans-serif;
   -webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;
   font-variant-numeric:tabular-nums}
@@ -164,7 +167,7 @@ body{height:100%;overflow:hidden;color:var(--ink);overscroll-behavior:none;backg
 input,textarea{caret-color:var(--accent)}
 ::-webkit-scrollbar{width:0;height:0}
 
-#app{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:none}
+#app{position:fixed;inset:0;height:100dvh;z-index:1;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:none}
 
 /* ── GLASS PRIMITIVES ───────────────────────────────────────── */
 .glass,#header,#bottom-nav,.chart-wrap,.cal-wrap,.budget-wrap,.settings-block,
@@ -691,7 +694,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
       </svg>
     </button>
-    <span id="header-title">SpendTrack</span>
+    <span id="header-title" style="cursor:pointer;-webkit-tap-highlight-color:transparent">SpendTrack</span>
     <button class="header-btn" id="btn-theme" aria-label="Toggle theme"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 12H2M22 12h-2.2M6.4 6.4 4.9 4.9M19.1 19.1l-1.5-1.5M17.6 6.4l1.5-1.5M4.9 19.1l1.5-1.5"/></svg></button>
   </div>
 
@@ -3356,6 +3359,45 @@ document.getElementById('btn-theme').addEventListener('click', toggleTheme);
 // INIT
 // ═══════════════════════════════════════
 
+// Layout diagnostics. Visit the app with ?debug=1 to see what this device really
+// reports; nothing renders without that flag.
+function showLayoutDebug(force) {
+  if (!force && !/[?&]debug=1/.test(location.search)) return;
+  const existing = document.getElementById('layout-debug');
+  if (existing) { existing.remove(); return; }
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;left:-9999px;height:env(safe-area-inset-bottom,0px);width:1px';
+  document.body.appendChild(probe);
+  const probeTop = document.createElement('div');
+  probeTop.style.cssText = 'position:fixed;left:-9999px;height:env(safe-area-inset-top,0px);width:1px';
+  document.body.appendChild(probeTop);
+  const insetBot = probe.getBoundingClientRect().height;
+  const insetTop = probeTop.getBoundingClientRect().height;
+  probe.remove(); probeTop.remove();
+  const nav = document.getElementById('bottom-nav').getBoundingClientRect();
+  const vv = window.visualViewport;
+  const rows = [
+    ['display-mode', matchMedia('(display-mode:standalone)').matches ? 'standalone' : 'browser'],
+    ['navigator.standalone', String(navigator.standalone)],
+    ['env safe-area top', insetTop.toFixed(1) + 'px'],
+    ['env safe-area bottom', insetBot.toFixed(1) + 'px'],
+    ['--safe-bot resolved', getComputedStyle(document.documentElement).getPropertyValue('--safe-bot').trim()],
+    ['innerHeight', innerHeight + 'px'],
+    ['visualViewport.height', vv ? vv.height.toFixed(1) + 'px' : 'n/a'],
+    ['screen.height', screen.height + 'px'],
+    ['nav bottom edge', nav.bottom.toFixed(1) + 'px'],
+    ['GAP below nav', (innerHeight - nav.bottom).toFixed(1) + 'px']
+  ];
+  const box = document.createElement('div');
+  box.id = 'layout-debug';
+  box.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:9999;padding:12px 14px;'
+    + 'border-radius:14px;background:rgba(0,0,0,.86);color:#fff;font:12px/1.55 -apple-system,monospace;'
+    + 'white-space:pre;overflow:auto;max-height:52vh';
+  box.textContent = rows.map(r => r[0].padEnd(22) + r[1]).join('\n');
+  box.addEventListener('click', () => box.remove());
+  document.body.appendChild(box);
+}
+
 async function init() {
   // Restore saved theme (or match system preference)
   try { applyPalette(localStorage.getItem('spendtrack-palette') || 'teal'); } catch(e) { applyPalette('teal'); }
@@ -3370,6 +3412,18 @@ async function init() {
     await loadAll();
     await ensureRecurring();
     switchView(State.view);
+    setTimeout(showLayoutDebug, 400);
+    (() => {
+      let taps = 0, timer = null;
+      const title = document.getElementById('header-title');
+      if (!title) return;
+      title.addEventListener('click', () => {
+        taps++;
+        clearTimeout(timer);
+        timer = setTimeout(() => { taps = 0; }, 700);
+        if (taps >= 3) { taps = 0; showLayoutDebug(true); }
+      });
+    })();
     if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
   } catch(err) {
     console.error(err);
