@@ -1,12 +1,12 @@
 {
   "name": "SpendTrack",
   "short_name": "SpendTrack",
-  "description": "Minimalist daily expense tracker for Singapore",
+  "description": "Log a Singapore expense in ten seconds. On-device only.",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F8F5F1",
-  "theme_color": "#F8F5F1",
+  "background_color": "#A5F0D1",
+  "theme_color": "#A5F0D1",
   "icons": [
     {
       "src": "./icon-192.svg",
@@ -20,6 +20,9 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["finance", "productivity"],
+  "categories": [
+    "finance",
+    "productivity"
+  ],
   "screenshots": []
 }

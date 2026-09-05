@@ -1,22 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <!-- SpendTrack. Paths only: no webfont, no network fetch, nothing to fail offline. -->
   <defs>
-    <style>@import url('https://cdn.jsdelivr.net/npm/@fontsource/poppins@5/600.css');</style>
-    <linearGradient id="highlight" x1="0" y1="0" x2="0" y2="192" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="white" stop-opacity="0.35"/>
-      <stop offset="0.5" stop-color="white" stop-opacity="0"/>
+    <linearGradient id="field" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#A5F0D1"/>
+      <stop offset="0.5" stop-color="#ACE4DE"/>
+      <stop offset="1" stop-color="#ABD4EF"/>
     </linearGradient>
-    <linearGradient id="shadow" x1="0" y1="0" x2="0" y2="192" gradientUnits="userSpaceOnUse">
-      <stop offset="0.5" stop-color="black" stop-opacity="0"/>
-      <stop offset="1" stop-color="black" stop-opacity="0.18"/>
+    <radialGradient id="lensBody" cx="0.34" cy="0.24" r="0.85">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.72"/>
+      <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.34"/>
+    </radialGradient>
+    <linearGradient id="lensRim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.75"/>
     </linearGradient>
-    <filter id="dollarShadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.18"/>
-    </filter>
   </defs>
-  <rect width="192" height="192" rx="42" fill="#C05C2A"/>
-  <rect width="192" height="192" rx="42" fill="url(#highlight)"/>
-  <rect width="192" height="192" rx="42" fill="url(#shadow)"/>
-  <text x="96" y="96" text-anchor="middle" dominant-baseline="central"
-        font-family="'Poppins', -apple-system, 'Helvetica Neue', Arial, sans-serif"
-        font-weight="600" font-size="119" fill="white" filter="url(#dollarShadow)">$</text>
+
+  <!-- the app's own ground -->
+  <rect width="192" height="192" rx="42" fill="url(#field)"/>
+
+  <!-- the signature object: one thick lens of glass -->
+  <circle cx="96" cy="96" r="60" fill="url(#lensBody)"/>
+  <circle cx="96" cy="96" r="60" fill="none" stroke="url(#lensRim)" stroke-width="2.5"/>
+  <!-- specular cap -->
+  <path d="M60 74a44 44 0 0 1 40-25" fill="none" stroke="#FFFFFF" stroke-opacity="0.85"
+        stroke-width="7" stroke-linecap="round"/>
+
+  <!-- S$ mark, drawn -->
+  <g fill="none" stroke="#07695F" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M115 79c0-9-9-15-19-15s-19 5-19 14c0 18 39 15 39 34 0 10-9 16-20 16s-20-6-20-15"/>
+    <path d="M96 52v88"/>
+  </g>
 </svg>
