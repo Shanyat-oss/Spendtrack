@@ -1401,7 +1401,7 @@ const DB = {
 // STATE
 // ═══════════════════════════════════════
 
-const APP_VERSION = 'v55';
+const APP_VERSION = 'v56';
 
 const State = {
   view: 'log',
@@ -3201,14 +3201,19 @@ async function readHabits(force) {
       pairs[k].count++;
     }
   }
-  const gone = new Set(State.categories.filter(c=>c.hidden).map(c=>c.id));
-  const ranked = Object.keys(catCount).filter(id=>!gone.has(id)).sort((a,b)=>catCount[b]-catCount[a]);
+  // Only offer a category the user can actually pick. That means present AND not
+  // archived - filtering on `hidden` alone still offered ids whose record is gone
+  // entirely, so the guess read "Uncategorised" and saving re-filed a NEW expense
+  // under the dead id, spreading the problem instead of containing it.
+  const usable = new Set(visibleCats().map(c=>c.id));
+  const ranked = Object.keys(catCount).filter(id=>usable.has(id)).sort((a,b)=>catCount[b]-catCount[a]);
   const memo = {
     ranked,
-    topCategory: ranked[0] || (rows[0]&&rows[0].category) || null,
+    topCategory: ranked[0] || (rows.find(r=>usable.has(r.category))||{}).category || null,
     lastPayment: (rows.find(r=>r.paymentMethod)||{}).paymentMethod
                  || Object.keys(payCount).sort((a,b)=>payCount[b]-payCount[a])[0] || null,
-    usuals: Object.values(pairs).filter(u=>u.count>=2).sort((a,b)=>b.count-a.count).slice(0,3)
+    usuals: Object.values(pairs).filter(u=>u.count>=2 && usable.has(u.category))
+              .sort((a,b)=>b.count-a.count).slice(0,3)
   };
   State._memo = memo;
   return memo;
