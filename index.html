@@ -583,7 +583,8 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
   font-size:11px;font-weight:700;z-index:5;box-shadow:var(--shade)}
 
 .manage-group{margin-bottom:22px}
-.manage-group-label{font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:12px}
+.manage-group-label{display:flex;align-items:center;gap:7px;
+  font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:12px}
 .manage-cat-icons{display:flex;flex-wrap:wrap;gap:14px}
 .manage-cat-item{display:flex;flex-direction:column;align-items:center;gap:6px;width:60px;
   cursor:default;position:relative;user-select:none}
@@ -644,7 +645,8 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 .filter-strip{display:flex;gap:8px;padding:8px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;
   scrollbar-width:none}
 .filter-strip::-webkit-scrollbar{display:none}
-.filter-chip{padding:6px 13px;border-radius:var(--r-capsule);white-space:nowrap;background:var(--glass);
+.filter-chip{display:inline-flex;align-items:center;gap:6px;
+  padding:6px 13px;border-radius:var(--r-capsule);white-space:nowrap;background:var(--glass);
   border:none;font-size:13px;color:var(--ink-2);cursor:pointer;
   box-shadow:inset 0 1px 0 var(--edge),inset 0 0 0 .5px var(--rim);
   transition:background .2s var(--ease),color .2s var(--ease),box-shadow .2s var(--ease)}
@@ -1397,7 +1399,7 @@ const DB = {
 // STATE
 // ═══════════════════════════════════════
 
-const APP_VERSION = 'v53';
+const APP_VERSION = 'v54';
 
 const State = {
   view: 'log',
@@ -2497,7 +2499,7 @@ function renderManageCats() {
     const cats = State.categories.filter(c=>c.mainCat===mc.id);
     if (!cats.length) return;
     html += `<div class="manage-group">
-      <div class="manage-group-label">${mc.icon} ${mc.name}</div>
+      <div class="manage-group-label">${icon(mc.id,17)}${mc.name}</div>
       <div class="manage-cat-icons">
         ${cats.map(c => `
           <div class="manage-cat-item" data-cat="${c.id}">
@@ -2513,7 +2515,7 @@ function renderManageCats() {
   });
 
   // Add category button at bottom
-  html += `<button onclick="openAddCategoryModal()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--accent-soft);color:var(--accent-ink);border:none;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px">➕ Add new category</button>`;
+  html += `<button onclick="openAddCategoryModal()" style="width:100%;padding:13px;border-radius:var(--r-sm);background:var(--accent-soft);color:var(--accent-ink);border:none;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:7px">${icon('plus',16)}Add new category</button>`;
 
   body.innerHTML = html;
 
@@ -2536,7 +2538,7 @@ function renderManageCats() {
       State.categories = State.categories.filter(c=>c.id!==catId);
       renderManageCats();
       buildCatPicker();
-      toast(`${cat.icon} ${cat.name} deleted`);
+      toast(`${cat.name} deleted`);
     });
   });
 
@@ -2554,10 +2556,10 @@ function renderManageCats() {
 function renderMoveToCat() {
   const cat = State.categories.find(c=>c.id===State.movingCatId);
   const body = document.getElementById('move-cat-body');
-  body.innerHTML = cat ? `<p style="font-size:14px;color:var(--ink-2);margin-bottom:16px">Move <strong>${cat.icon} ${cat.name}</strong> to:</p>` : '';
+  body.innerHTML = cat ? `<p style="font-size:14px;color:var(--ink-2);margin-bottom:16px;display:flex;align-items:center;gap:7px">Move ${catIcon(cat,20)}<strong>${cat.name}</strong> to:</p>` : '';
   body.innerHTML += MAIN_CATEGORIES.map(mc =>
     `<div onclick="moveCatTo('${mc.id}')" style="padding:14px 16px;background:var(--glass-faint);border-radius:var(--r-sm);margin-bottom:8px;cursor:pointer;font-size:15px;display:flex;align-items:center;gap:10px">
-      <span style="font-size:22px">${mc.icon}</span> ${mc.name}
+      ${icon(mc.id,22)} ${mc.name}
     </div>`
   ).join('');
 }
@@ -2570,7 +2572,7 @@ window.moveCatTo = async function(mainCatId) {
   closeModal('modal-move-cat');
   State.catWiggleMode = false;
   renderManageCats();
-  toast(`${cat.icon} moved to ${getMain(mainCatId).name}`);
+  toast(`${cat.name} moved to ${getMain(mainCatId).name}`);
 };
 
 document.getElementById('manage-cats-close').addEventListener('click', () => { State.catWiggleMode=false; closeModal('modal-manage-cats'); });
@@ -2728,7 +2730,7 @@ window.openBudgetModal = function() {
   document.getElementById('budget-overall').value = budget.overall||'';
   const catFields = document.getElementById('budget-cat-fields');
   catFields.innerHTML = `<div class="form-group" style="margin-top:4px"><label class="form-label" style="color:var(--ink-2)">Per-category limits (optional)</label></div>` +
-    State.categories.map(c=>`<div class="form-group"><label class="form-label">${c.icon} ${c.name}</label><input class="form-input" data-cat="${c.id}" type="number" min="0" placeholder="No limit" value="${budget.cats?.[c.id]||''}"></div>`).join('');
+    State.categories.map(c=>`<div class="form-group"><label class="form-label" style="display:flex;align-items:center;gap:7px">${catIcon(c,17)}${c.name}</label><input class="form-input" data-cat="${c.id}" type="number" min="0" placeholder="No limit" value="${budget.cats?.[c.id]||''}"></div>`).join('');
   openModal('modal-budget');
 };
 document.getElementById('budget-save').addEventListener('click', async () => {
@@ -2775,7 +2777,7 @@ async function checkBudgetAlerts(savedExp) {
     const prevPct = (prevSpent / limit) * 100;
     if (pct >= threshold && prevPct < threshold) {
       const mc = getMain(mcId);
-      alerts.push(`${mc.icon} <strong>${mc.name}</strong>: ${pct.toFixed(0)}% used — ${fmt.currency(spent)} of ${fmt.currency(limit)}`);
+      alerts.push(`${icon(mc.id,17)} <strong>${mc.name}</strong>: ${pct.toFixed(0)}% used — ${fmt.currency(spent)} of ${fmt.currency(limit)}`);
     }
     // Also alert at 100%
     if (pct >= 100 && prevPct < 100) {
@@ -2868,10 +2870,17 @@ document.getElementById('import-json-input').addEventListener('change', async fu
     await clearStore('expenses');
     for (const e of data.expenses) await DB.put('expenses', e);
 
-    // Replace categories (if present)
+    // Replace categories (if present). Anything the backup predates is added back
+    // afterwards: loadAll() only seeds defaults into a completely empty store, so
+    // without this an older backup silently deletes newer built-in categories and
+    // their expenses render as a raw id with no glyph.
     if (Array.isArray(data.categories) && data.categories.length) {
       await clearStore('categories');
       for (const c of data.categories) await DB.put('categories', c);
+      const have = new Set(data.categories.map(c => c && c.id));
+      const restored = DEFAULT_CATEGORIES.filter(c => !have.has(c.id));
+      for (const c of restored) await DB.put('categories', c);
+      if (restored.length) console.info('restored %d built-in categories the backup predates', restored.length);
     }
 
     // Replace budgets (if present)
@@ -3088,7 +3097,7 @@ function closeSearch() {
 function renderSearchFilters() {
   const strip = document.getElementById('search-filter-strip');
   strip.innerHTML = `<div class="filter-chip ${!State.filterCategory?'active':''}" data-cat="">All</div>` +
-    State.categories.map(c => `<div class="filter-chip ${State.filterCategory===c.id?'active':''}" data-cat="${c.id}">${c.icon} ${c.name}</div>`).join('');
+    State.categories.map(c => `<div class="filter-chip ${State.filterCategory===c.id?'active':''}" data-cat="${c.id}">${catIcon(c,15)}${c.name}</div>`).join('');
   strip.querySelectorAll('.filter-chip').forEach(chip => chip.addEventListener('click', () => {
     State.filterCategory = chip.dataset.cat || null;
     renderSearchFilters();
