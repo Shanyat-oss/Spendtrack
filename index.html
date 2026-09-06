@@ -1185,7 +1185,9 @@ function icon(id, size) {
 // user chose when they created it. Never rewrites the stored record.
 function catIcon(cat, size) {
   if (!cat) return icon('other', size);
-  return ICON_PATHS[cat.id] ? icon(cat.id, size) : `<span class="ico-emoji">${cat.icon || ''}</span>`;
+  if (ICON_PATHS[cat.id]) return icon(cat.id, size);
+  // no drawn glyph and no emoji means a record we no longer have; never render nothing
+  return cat.icon ? `<span class="ico-emoji">${cat.icon}</span>` : icon('other', size);
 }
 
 const MAIN_CATEGORIES = [
@@ -1399,7 +1401,7 @@ const DB = {
 // STATE
 // ═══════════════════════════════════════
 
-const APP_VERSION = 'v54';
+const APP_VERSION = 'v55';
 
 const State = {
   view: 'log',
@@ -1453,7 +1455,9 @@ const fmt = {
 };
 
 function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2); }
-function getCat(id) { return State.categories.find(c=>c.id===id)||{id:id,name:id,icon:''}; }
+function getCat(id) { return State.categories.find(c=>c.id===id)||{id:id,name:'Uncategorised',icon:'',mainCat:'other'}; }
+// Archived categories keep resolving for old expenses but are never offered again.
+function visibleCats() { return State.categories.filter(c => !c.hidden); }
 function getMain(id) { return MAIN_CATEGORIES.find(m=>m.id===id)||MAIN_CATEGORIES[7]; }
 
 let _toastTimer = null;
@@ -2109,7 +2113,7 @@ async function renderGoals() {
   const monthLabel = d.toLocaleDateString('en-SG',{month:'long',year:'numeric'});
 
   // Only show main cats that have sub-categories in this user's data
-  const activeMains = MAIN_CATEGORIES.filter(mc => State.categories.some(c=>c.mainCat===mc.id));
+  const activeMains = MAIN_CATEGORIES.filter(mc => visibleCats().some(c=>c.mainCat===mc.id));
 
   let html = `
   <div style="padding:16px 16px 8px">
@@ -2220,7 +2224,7 @@ function renderSettings() {
     <div class="settings-block">
       <div class="settings-row" role="button" tabindex="0" onclick="openManageCats()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openManageCats()}">
         <span class="settings-row-icon">${icon('tag',20)}</span><span class="settings-row-label">Manage categories</span>
-        <span class="settings-row-value">${State.categories.length}</span>
+        <span class="settings-row-value">${visibleCats().length}</span>
         <span class="settings-row-arrow">›</span>
       </div>
       <div class="settings-row" role="button" tabindex="0" onclick="openAddCategoryModal()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openAddCategoryModal()}">
@@ -2287,7 +2291,7 @@ function buildCatPicker() {
   // Main grid
   const mainGrid = document.getElementById('main-cat-grid');
   mainGrid.innerHTML = MAIN_CATEGORIES.map(mc => {
-    const hasSubs = State.categories.some(c=>c.mainCat===mc.id);
+    const hasSubs = visibleCats().some(c=>c.mainCat===mc.id);
     if (!hasSubs) return '';
     const isOpen = State.openMainCat===mc.id;
     const hasSelected = selectedCat?.mainCat===mc.id;
@@ -2306,7 +2310,7 @@ function buildCatPicker() {
 
   if (State.openMainCat) {
     const openMc = MAIN_CATEGORIES.find(m=>m.id===State.openMainCat);
-    const subs = State.categories.filter(c=>c.mainCat===State.openMainCat);
+    const subs = visibleCats().filter(c=>c.mainCat===State.openMainCat);
 
     // Sub-row label + wiggle done button
     let labelHtml = `<div class="sub-cat-group-label">
@@ -2353,11 +2357,14 @@ function buildCatPicker() {
     btn.addEventListener('click', async e => {
       e.stopPropagation();
       const cid = btn.dataset.delSub;
-      await DB.delete('categories', cid);
-      State.categories = State.categories.filter(c=>c.id!==cid);
+      const sub = State.categories.find(c=>c.id===cid);
+      if (!sub) return;
+      sub.hidden = true;
+      await DB.put('categories', sub);
       if (State.selectedCategory===cid) State.selectedCategory = null;
+      invalidateMemo();
       buildCatPicker();
-      toast('Category removed');
+      toast(`${sub.name} removed`);
     });
   });
 
@@ -2496,7 +2503,7 @@ function renderManageCats() {
 
   let html = '';
   MAIN_CATEGORIES.forEach(mc => {
-    const cats = State.categories.filter(c=>c.mainCat===mc.id);
+    const cats = visibleCats().filter(c=>c.mainCat===mc.id);
     if (!cats.length) return;
     html += `<div class="manage-group">
       <div class="manage-group-label">${icon(mc.id,17)}${mc.name}</div>
@@ -2533,9 +2540,10 @@ function renderManageCats() {
       const catId = btn.dataset.delCat;
       const cat = State.categories.find(c=>c.id===catId);
       if (!cat) return;
-      if (!confirm(`Delete "${cat.name}"? Existing expenses will keep this category label.`)) return;
-      await DB.delete('categories', catId);
-      State.categories = State.categories.filter(c=>c.id!==catId);
+      if (!confirm(`Remove "${cat.name}"?\n\nIt stops being offered when you log. Expenses already filed under it keep this label.`)) return;
+      cat.hidden = true;
+      await DB.put('categories', cat);
+      invalidateMemo();
       renderManageCats();
       buildCatPicker();
       toast(`${cat.name} deleted`);
@@ -2730,7 +2738,7 @@ window.openBudgetModal = function() {
   document.getElementById('budget-overall').value = budget.overall||'';
   const catFields = document.getElementById('budget-cat-fields');
   catFields.innerHTML = `<div class="form-group" style="margin-top:4px"><label class="form-label" style="color:var(--ink-2)">Per-category limits (optional)</label></div>` +
-    State.categories.map(c=>`<div class="form-group"><label class="form-label" style="display:flex;align-items:center;gap:7px">${catIcon(c,17)}${c.name}</label><input class="form-input" data-cat="${c.id}" type="number" min="0" placeholder="No limit" value="${budget.cats?.[c.id]||''}"></div>`).join('');
+    visibleCats().map(c=>`<div class="form-group"><label class="form-label" style="display:flex;align-items:center;gap:7px">${catIcon(c,17)}${c.name}</label><input class="form-input" data-cat="${c.id}" type="number" min="0" placeholder="No limit" value="${budget.cats?.[c.id]||''}"></div>`).join('');
   openModal('modal-budget');
 };
 document.getElementById('budget-save').addEventListener('click', async () => {
@@ -3097,7 +3105,7 @@ function closeSearch() {
 function renderSearchFilters() {
   const strip = document.getElementById('search-filter-strip');
   strip.innerHTML = `<div class="filter-chip ${!State.filterCategory?'active':''}" data-cat="">All</div>` +
-    State.categories.map(c => `<div class="filter-chip ${State.filterCategory===c.id?'active':''}" data-cat="${c.id}">${catIcon(c,15)}${c.name}</div>`).join('');
+    visibleCats().map(c => `<div class="filter-chip ${State.filterCategory===c.id?'active':''}" data-cat="${c.id}">${catIcon(c,15)}${c.name}</div>`).join('');
   strip.querySelectorAll('.filter-chip').forEach(chip => chip.addEventListener('click', () => {
     State.filterCategory = chip.dataset.cat || null;
     renderSearchFilters();
@@ -3193,7 +3201,8 @@ async function readHabits(force) {
       pairs[k].count++;
     }
   }
-  const ranked = Object.keys(catCount).sort((a,b)=>catCount[b]-catCount[a]);
+  const gone = new Set(State.categories.filter(c=>c.hidden).map(c=>c.id));
+  const ranked = Object.keys(catCount).filter(id=>!gone.has(id)).sort((a,b)=>catCount[b]-catCount[a]);
   const memo = {
     ranked,
     topCategory: ranked[0] || (rows[0]&&rows[0].category) || null,
@@ -3436,7 +3445,7 @@ async function openQuickCat(focus) {
   document.getElementById('quickcat-pay-sec').style.display = focus === 'pay' ? '' : 'none';
   const grid = document.getElementById('quickcat-grid');
   const ranked = [...memo.ranked];
-  for (const c of State.categories) if (!ranked.includes(c.id)) ranked.push(c.id);
+  for (const c of visibleCats()) if (!ranked.includes(c.id)) ranked.push(c.id);
   const top = ranked.slice(0,7);
   grid.innerHTML = top.map(id=>{
     const c = getCat(id);

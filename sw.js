@@ -1,4 +1,4 @@
-const CACHE = 'spendtrack-v54';
+const CACHE = 'spendtrack-v55';
 const ASSETS = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
