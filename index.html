@@ -573,12 +573,15 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 @keyframes wiggle{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
 .wiggling{animation:wiggle .18s ease-in-out infinite}
 .minus-badge{position:absolute;top:-8px;left:-8px;width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
   background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;
   font-size:15px;font-weight:700;z-index:5;box-shadow:var(--shade)}
 .sub-minus-badge{position:absolute;top:-7px;left:-7px;width:18px;height:18px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
   background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;
   font-size:13px;font-weight:700;z-index:5;box-shadow:var(--shade)}
 .move-badge{position:absolute;bottom:-8px;right:-8px;width:20px;height:20px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
   background:var(--accent);color:var(--field-1);display:flex;align-items:center;justify-content:center;
   font-size:11px;font-weight:700;z-index:5;box-shadow:var(--shade)}
 
@@ -614,6 +617,7 @@ input[type=range].alert-slider::-webkit-slider-thumb{-webkit-appearance:none;wid
 .pay-text-chip.done-pay{background:var(--accent);color:var(--field-1);font-weight:600}
 .pay-text-chip.wiggling{animation:wiggle .18s ease-in-out infinite}
 .pay-minus{position:absolute;top:-8px;left:-8px;width:20px;height:20px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
   background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;
   font-size:14px;font-weight:700;z-index:5;box-shadow:var(--shade)}
 .pay-add-input{width:100%;margin-top:8px;display:none}
@@ -778,6 +782,17 @@ html.very-short .log-total{min-height:40px;padding:9px 13px}
 /* If it still cannot fit, scroll rather than hide the commit button. */
 html.very-short #view-log{min-height:0}
 .quickcat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 0 4px}
+/* Choosing a category's icon from the app's own set, never from the keyboard. */
+.glyph-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;
+  max-height:196px;overflow-y:auto;scrollbar-width:none;padding:2px}
+.glyph-grid::-webkit-scrollbar{display:none}
+.glyph-opt{display:flex;align-items:center;justify-content:center;min-height:46px;
+  border:none;border-radius:var(--r-sm);cursor:pointer;color:var(--ink-2);
+  background:var(--glass);box-shadow:inset 0 1px 0 var(--edge),inset 0 0 0 .5px var(--rim);
+  transition:background .2s var(--ease),color .2s var(--ease),box-shadow .2s var(--ease)}
+.glyph-opt:active{transform:scale(.94)}
+.glyph-opt.selected{background:var(--glass-strong);color:var(--accent);
+  box-shadow:inset 0 1px 0 var(--edge),inset 0 0 0 1.5px var(--accent)}
 
 @media(prefers-reduced-motion:reduce){
   /* Keep state changes legible: colour and opacity still transition, movement does not. */
@@ -894,7 +909,7 @@ html.very-short #view-log{min-height:0}
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-top">
-      <button class="modal-close-btn" id="expense-cancel">✕</button>
+      <button class="modal-close-btn" id="expense-cancel" aria-label="Close"><svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.6 6.6 17.4 17.4M17.4 6.6 6.6 17.4"/></svg></button>
       <div class="modal-title" id="expense-modal-title">Add Expense</div>
       <div style="width:30px"></div>
     </div>
@@ -908,7 +923,7 @@ html.very-short #view-log{min-height:0}
         <button class="calc-key" data-k="7">7</button>
         <button class="calc-key" data-k="8">8</button>
         <button class="calc-key" data-k="9">9</button>
-        <button class="calc-key" data-k="⌫">⌫</button>
+        <button class="calc-key" data-k="⌫" aria-label="Delete last digit"><svg class="ico" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.1 5.6h9.4A1.6 1.6 0 0 1 20.1 7.2v9.6a1.6 1.6 0 0 1-1.6 1.6H9.1L3.4 12z"/><path d="m11.7 9.7 4.5 4.6M16.2 9.7l-4.5 4.6"/></svg></button>
         <button class="calc-key" data-k="4">4</button>
         <button class="calc-key" data-k="5">5</button>
         <button class="calc-key" data-k="6">6</button>
@@ -976,14 +991,14 @@ html.very-short #view-log{min-height:0}
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-top">
-      <button class="modal-close-btn" id="cat-modal-cancel">✕</button>
+      <button class="modal-close-btn" id="cat-modal-cancel" aria-label="Close"><svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.6 6.6 17.4 17.4M17.4 6.6 6.6 17.4"/></svg></button>
       <div class="modal-title">Add Category</div>
       <button class="btn-sm btn-primary" id="cat-modal-save">Add</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label class="form-label" for="new-cat-emoji">Emoji icon</label>
-        <input class="form-input" id="new-cat-emoji" type="text" placeholder="e.g. 🏋️" maxlength="2" style="font-size:28px;text-align:center">
+        <label class="form-label">Icon</label>
+        <div class="glyph-grid" id="new-cat-glyphs" role="radiogroup" aria-label="Category icon"></div>
       </div>
       <div class="form-group">
         <label class="form-label" for="new-cat-name">Category name</label>
@@ -1002,7 +1017,7 @@ html.very-short #view-log{min-height:0}
   <div class="modal-sheet" style="max-height:95vh">
     <div class="modal-handle"></div>
     <div class="modal-top" id="manage-cats-top">
-      <button class="modal-close-btn" id="manage-cats-close">✕</button>
+      <button class="modal-close-btn" id="manage-cats-close" aria-label="Close"><svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.6 6.6 17.4 17.4M17.4 6.6 6.6 17.4"/></svg></button>
       <div class="modal-title" style="padding:0">Manage Categories</div>
       <button class="btn-sm btn-ghost" id="manage-cats-reset" style="flex:0 0 auto;padding:8px 14px">Reset</button>
     </div>
@@ -1040,7 +1055,7 @@ html.very-short #view-log{min-height:0}
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-top">
-      <button class="modal-close-btn" id="budget-cancel">✕</button>
+      <button class="modal-close-btn" id="budget-cancel" aria-label="Close"><svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.6 6.6 17.4 17.4M17.4 6.6 6.6 17.4"/></svg></button>
       <div class="modal-title">Monthly Budget</div>
       <button class="btn-sm btn-primary" id="budget-save">Save</button>
     </div>
@@ -1089,7 +1104,7 @@ html.very-short #view-log{min-height:0}
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-top">
-      <button class="modal-close-btn" id="receipt-cancel">✕</button>
+      <button class="modal-close-btn" id="receipt-cancel" aria-label="Close"><svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.6 6.6 17.4 17.4M17.4 6.6 6.6 17.4"/></svg></button>
       <div class="modal-title">Scan Receipt</div>
       <button class="btn-sm btn-primary" id="receipt-use" style="display:none">Use</button>
     </div>
@@ -1170,6 +1185,11 @@ const ICON_PATHS = {
   receipt:'<path d="M6.2 3.6h11.6v17l-2-1.4-1.9 1.4-1.9-1.4-1.9 1.4-1.9-1.4-2 1.4z"/><path d="M9.2 8.6h5.6M9.2 12.4h5.6"/>',
   wallet:'<path d="M3.6 7.6A1.6 1.6 0 0 1 5.2 6h13.2a1.6 1.6 0 0 1 1.6 1.6v9.8a1.6 1.6 0 0 1-1.6 1.6H5.2a1.6 1.6 0 0 1-1.6-1.6z"/><path d="M15.6 11.4h4.4v3.2h-4.4a1.6 1.6 0 0 1 0-3.2z"/>',
   check:'<path d="M4.5 12.6 9.4 17.5 19.5 7.4"/>',
+  close:'<path d="M6.6 6.6 17.4 17.4M17.4 6.6 6.6 17.4"/>',
+  minus:'<path d="M6.4 12h11.2"/>',
+  backspace:'<path d="M9.1 5.6h9.4A1.6 1.6 0 0 1 20.1 7.2v9.6a1.6 1.6 0 0 1-1.6 1.6H9.1L3.4 12z"/><path d="m11.7 9.7 4.5 4.6M16.2 9.7l-4.5 4.6"/>',
+  move:'<path d="M7.2 5.6v6.1a2.1 2.1 0 0 0 2.1 2.1h7.3"/><path d="m14.1 11.1 3.2 2.7-3.2 2.7"/>',
+  alert:'<path d="M12 4.6 20.9 19.4H3.1z"/><path d="M12 10.1v4.1"/><path d="M12 17.05v.1"/>',
   repeat:'<path d="M4 9.5A4.5 4.5 0 0 1 8.5 5h9M20 14.5A4.5 4.5 0 0 1 15.5 19h-9"/><path d="m14.5 2.5 3 2.5-3 2.5M9.5 16.5 6.5 19l3 2.5"/>'
 };
 // ids that are sub-categories of a group but share the group's glyph
@@ -1186,7 +1206,9 @@ function icon(id, size) {
 function catIcon(cat, size) {
   if (!cat) return icon('other', size);
   if (ICON_PATHS[cat.id]) return icon(cat.id, size);
-  // no drawn glyph and no emoji means a record we no longer have; never render nothing
+  // a custom category made since v57 picks from the drawn set; older ones kept an
+  // emoji, and a record we no longer have has neither
+  if (cat.glyph && ICON_PATHS[cat.glyph]) return icon(cat.glyph, size);
   return cat.icon ? `<span class="ico-emoji">${cat.icon}</span>` : icon('other', size);
 }
 
@@ -1227,6 +1249,16 @@ const DEFAULT_CATEGORIES = [
   { id:'activities',   name:'Activities',  icon:'🎡', mainCat:'travel' },
   { id:'other',        name:'Other',       icon:'💸', mainCat:'other' },
 ];
+
+// The drawn set a custom category may choose from — the category glyphs plus the few
+// chrome ones that read as a category. Chrome-only marks (search, trash, upload…) are
+// deliberately absent: they mean something else in this app.
+const CUSTOM_GLYPHS = ['hawker','restaurant','cafe','groceries','food',
+  'mrt_bus','grab','petrol','parking','transport',
+  'housing','utilities','home_sup','home',
+  'health','fitness','pharmacy','wellness',
+  'entertainment','shopping','gifts','activities','subscriptions','lifestyle',
+  'work_exp','education','work','hotel','travel','receipt','wallet','tag','repeat','other'];
 
 const DEFAULT_PAY_METHODS = ['Credit Card','Debit Card','PayNow','Cash','GrabPay','Apple Pay','NETS'];
 
@@ -1401,7 +1433,7 @@ const DB = {
 // STATE
 // ═══════════════════════════════════════
 
-const APP_VERSION = 'v56';
+const APP_VERSION = 'v57';
 
 const State = {
   view: 'log',
@@ -1956,7 +1988,7 @@ function renderChart() {
       html += `<div class="budget-wrap">
         <div class="budget-row"><span class="budget-label">Monthly budget</span><span class="budget-amount">${fmt.currency(total)} of ${fmt.currency(limit)}</span></div>
         <div class="budget-bar-track"><div class="budget-bar-fill ${barClass}" style="width:${pct}%"></div></div>
-        <div class="budget-pct">${pct.toFixed(0)}% used${pct>=100?' — Over budget! ⚠️':''}</div>
+        <div class="budget-pct">${pct.toFixed(0)}% used${pct>=100?' — over budget':''}</div>
       </div>`;
     }
 
@@ -2322,7 +2354,7 @@ function buildCatPicker() {
 
     subInner.innerHTML = labelHtml + subs.map(c =>
       `<div class="sub-cat-item ${State.selectedCategory===c.id?'selected':''} ${subWiggle?'wiggling':''}" data-sub="${c.id}" style="position:relative">
-        ${subWiggle ? `<div class="sub-minus-badge" data-del-sub="${c.id}">−</div>` : ''}
+        ${subWiggle ? `<div class="sub-minus-badge" data-del-sub="${c.id}" aria-label="Remove">${icon('minus',13)}</div>` : ''}
         <div class="sub-cat-emoji">${catIcon(c,22)}</div>
         <div class="sub-cat-label">${c.name}</div>
       </div>`
@@ -2402,13 +2434,13 @@ function buildPayPicker() {
 
   el.innerHTML = methods.map(m =>
     `<div class="pay-text-chip ${State.selectedPayment===m?'selected':''} ${wiggle?'wiggling':''}" data-pay="${m}" style="position:relative">
-      ${wiggle ? `<div class="pay-minus" data-del="${m}">−</div>` : ''}
+      ${wiggle ? `<div class="pay-minus" data-del="${m}" aria-label="Remove">${icon('minus',14)}</div>` : ''}
       ${m}
     </div>`
   ).join('') +
   (wiggle
     ? `<div class="pay-text-chip done-pay" id="pay-done">Done</div>`
-    : `<div class="pay-text-chip add-pay" id="pay-add-chip">＋ Add</div>`
+    : `<div class="pay-text-chip add-pay" id="pay-add-chip">${icon('plus',15)} Add</div>`
   );
 
   // Always hide the text input by default; show only when "+ Add" tapped
@@ -2482,7 +2514,7 @@ function renderManageCats() {
   const body = document.getElementById('manage-cats-body');
   const hint = document.getElementById('manage-cats-hint');
   const wiggle = State.catWiggleMode;
-  hint.textContent = wiggle ? 'Tap − to delete · Tap ⤷ to move (custom only)' : 'Hold any icon to edit';
+  hint.textContent = wiggle ? 'Tap the minus to remove · the corner arrow moves a custom category' : 'Hold any icon to edit';
 
   // Show Done button in wiggle mode
   const top = document.getElementById('manage-cats-top');
@@ -2511,8 +2543,8 @@ function renderManageCats() {
         ${cats.map(c => `
           <div class="manage-cat-item" data-cat="${c.id}">
             <div class="manage-cat-icon-wrap ${wiggle?'wiggling':''}">
-              ${wiggle ? `<div class="minus-badge" data-del-cat="${c.id}">−</div>` : ''}
-              ${wiggle && c.custom ? `<div class="move-badge" data-move-cat="${c.id}">⤷</div>` : ''}
+              ${wiggle ? `<div class="minus-badge" data-del-cat="${c.id}" aria-label="Remove">${icon('minus',15)}</div>` : ''}
+              ${wiggle && c.custom ? `<div class="move-badge" data-move-cat="${c.id}" aria-label="Move to another group">${icon('move',13)}</div>` : ''}
               ${catIcon(c,26)}
             </div>
             <div class="manage-cat-label">${c.name}</div>
@@ -2599,33 +2631,47 @@ document.getElementById('manage-cats-reset').addEventListener('click', async () 
 // ADD CATEGORY
 // ═══════════════════════════════════════
 
+function renderGlyphGrid() {
+  const grid = document.getElementById('new-cat-glyphs');
+  grid.innerHTML = CUSTOM_GLYPHS.map(g =>
+    `<button type="button" class="glyph-opt ${g===State.newCatGlyph?'selected':''}" role="radio"
+       aria-checked="${g===State.newCatGlyph}" data-glyph="${g}" aria-label="${g.replace(/_/g,' ')}">${icon(g,22)}</button>`
+  ).join('');
+  grid.querySelectorAll('[data-glyph]').forEach(b => b.addEventListener('click', () => {
+    State.newCatGlyph = b.dataset.glyph; renderGlyphGrid();
+  }));
+}
+
 window.openAddCategoryModal = function(defaultMain) {
   State.newCatDefaultMain = defaultMain || State.openMainCat || 'other';
-  document.getElementById('new-cat-emoji').value = '';
+  // start on the group's own glyph rather than an empty field
+  State.newCatGlyph = State.newCatDefaultMain;
   document.getElementById('new-cat-name').value = '';
-  // Populate group dropdown
+  renderGlyphGrid();
+  // an <option> cannot contain an SVG, so this select carries names only
   const sel = document.getElementById('new-cat-main');
-  sel.innerHTML = MAIN_CATEGORIES.map(mc => `<option value="${mc.id}" ${mc.id===State.newCatDefaultMain?'selected':''}>${mc.icon} ${mc.name}</option>`).join('');
+  sel.innerHTML = MAIN_CATEGORIES.map(mc => `<option value="${mc.id}" ${mc.id===State.newCatDefaultMain?'selected':''}>${mc.name}</option>`).join('');
+  sel.onchange = () => { State.newCatGlyph = sel.value; renderGlyphGrid(); };
   openModal('modal-category');
 };
 
 document.getElementById('cat-modal-cancel').addEventListener('click', () => closeModal('modal-category'));
 document.getElementById('cat-modal-save').addEventListener('click', async () => {
-  const emoji = document.getElementById('new-cat-emoji').value.trim();
   const name  = document.getElementById('new-cat-name').value.trim();
   const mainCat = document.getElementById('new-cat-main').value;
-  if (!emoji||!name) { toast('Fill in both fields'); return; }
-  const cat = { id:uid(), name, icon:emoji, color:chartRamp()[State.categories.length%chartRamp().length], mainCat, custom:true };
+  if (!name) { toast('Give the category a name'); return; }
+  const glyph = ICON_PATHS[State.newCatGlyph] ? State.newCatGlyph : mainCat;
+  const cat = { id:uid(), name, glyph, icon:'', color:chartRamp()[State.categories.length%chartRamp().length], mainCat, custom:true };
   await DB.put('categories',cat);
   State.categories.push(cat);
   State.selectedCategory = cat.id;
   State.openMainCat = cat.mainCat;
-  document.getElementById('new-cat-emoji').value='';
   document.getElementById('new-cat-name').value='';
+  invalidateMemo();
   closeModal('modal-category');
   buildCatPicker();
   if (document.getElementById('modal-manage-cats').classList.contains('open')) renderManageCats();
-  toast(`${emoji} ${name} added`);
+  toast(`${name} added`);
 });
 
 // ═══════════════════════════════════════
@@ -3316,7 +3362,8 @@ async function renderLog() {
       ${['7','8','9','⌫','4','5','6','+','1','2','3','−','C','0','.'].map(k=>{
         const cls = (['+','−','⌫'].includes(k)?'calc-key op':(k==='C'?'calc-key clr':'calc-key'))
                   + (k==='0'?' span2':'');
-        return `<button class="${cls}" data-k="${k==='−'?'-':k}">${k}</button>`;
+        const label = k==='⌫' ? icon('backspace',21) : k;
+        return `<button class="${cls}" data-k="${k==='−'?'-':k}"${k==='⌫'?' aria-label="Delete last digit"':''}>${label}</button>`;
       }).join('')}
     </div>
 
@@ -3836,7 +3883,8 @@ function paintLogShell() {
       ${['7','8','9','⌫','4','5','6','+','1','2','3','−','C','0','.'].map(k=>{
         const cls = (['+','−','⌫'].includes(k)?'calc-key op':(k==='C'?'calc-key clr':'calc-key'))
                   + (k==='0'?' span2':'');
-        return `<button class="${cls}" data-k="${k==='−'?'-':k}">${k}</button>`;
+        const label = k==='⌫' ? icon('backspace',21) : k;
+        return `<button class="${cls}" data-k="${k==='−'?'-':k}"${k==='⌫'?' aria-label="Delete last digit"':''}>${label}</button>`;
       }).join('')}
     </div>
 
@@ -3886,7 +3934,7 @@ async function init() {
     if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
   } catch(err) {
     console.error(err);
-    document.getElementById('view-day').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Error loading</h3><p>${err.message}</p></div>`;
+    document.getElementById('view-day').innerHTML=`<div class="empty-state"><div class="empty-icon">${icon('alert',34)}</div><h3>Error loading</h3><p>${err.message}</p></div>`;
   }
 }
 
