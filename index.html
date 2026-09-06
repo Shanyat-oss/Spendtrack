@@ -34,7 +34,7 @@
   --shade:0 6px 22px rgba(10,45,52,.13);
   --shade-lift:0 14px 34px rgba(10,45,52,.22);
   /* Signals — the only colours that carry meaning */
-  --accent:#07695F; --accent-soft:rgba(7,105,95,.14); --accent-ink:#04443D;
+  --accent:#065E55; --accent-soft:rgba(6,94,85,.14); --accent-ink:#04443D;
   --amber:#8A5B0B; --amber-soft:rgba(138,91,11,.15);
   --red:#A82F26; --red-soft:rgba(168,47,38,.13);
   /* Geometry */
@@ -76,7 +76,7 @@ html[data-theme="light"]{
   --edge:rgba(255,255,255,.85); --rim:rgba(255,255,255,.55);
   --blur:blur(22px) saturate(1.7); --blur-deep:blur(34px) saturate(1.9);
   --shade:0 6px 22px rgba(10,45,52,.13); --shade-lift:0 14px 34px rgba(10,45,52,.22);
-  --accent:#07695F; --accent-soft:rgba(7,105,95,.14); --accent-ink:#04443D;
+  --accent:#065E55; --accent-soft:rgba(6,94,85,.14); --accent-ink:#04443D;
   --amber:#8A5B0B; --amber-soft:rgba(138,91,11,.15);
   --red:#A82F26; --red-soft:rgba(168,47,38,.13);
 }
@@ -1226,12 +1226,110 @@ const DEFAULT_CATEGORIES = [
 
 const DEFAULT_PAY_METHODS = ['Credit Card','Debit Card','PayNow','Cash','GrabPay','Apple Pay','NETS'];
 
+// Teal's ramp is the authored, reviewed one — a cool ramp in the field's own
+// temperature. It is kept literal rather than generated so the approved look is exactly
+// the approved look. The other palettes derive theirs; see RAMP_SPEC below.
 const CHART_COLORS = [
-  // Cool-led ramp in the field's own temperature; ochre and clay are the only warm voices.
   '#0A5F5A','#17847B','#28A697','#3FC4AE','#2F7FA8',
   '#4E9BC4','#6FB6D6','#5C6FB0','#7E86C6','#3E8E7E',
   '#5FA894','#8FC4B4','#46778F','#6E93A6','#9BB8C4','#2B6E86','#54A0A8','#7FBFC4'
 ];
+
+// A chart on a warm sand ground drawn in teal reads as a panel pasted on top of the
+// page. The trend line has always taken its colour from --accent; the donut now takes
+// its ramp from the same place. Six hues × nine lightness steps: the lightness walks
+// the full range across the first nine entries, which is what carries the separation
+// on Paper, where there is almost no saturation left to carry it.
+const RAMP_SPEC = {
+  graphite: { hues:[205,222,192,236,212,198], sat:[.44,.16], light:[.26,.63], dark:[.40,.78] },
+  bronze:   { hues:[26,40,14,46,32,20],       sat:[.58,.24], light:[.28,.62], dark:[.42,.78] },
+  paper:    { hues:[210,198,226,188,232,204], sat:[.30,.10], light:[.20,.66], dark:[.36,.82] }
+};
+// 24 default categories against 18 colours meant 11 of them shared one, which is what
+// put a category back on the move: identity had nowhere to go and the collision pass
+// took over. The ramp is sized to outrun the category list instead.
+const RAMP_N = 30, RAMP_STEPS = 10;
+
+// Extends the literal teal ramp past its 18 authored entries without touching them:
+// the extras are the same hues at a different lightness.
+function shiftLightness(hex, dl) {
+  const r=parseInt(hex.slice(1,3),16)/255, g=parseInt(hex.slice(3,5),16)/255, b=parseInt(hex.slice(5,7),16)/255;
+  const mx=Math.max(r,g,b), mn=Math.min(r,g,b), l=(mx+mn)/2, d=mx-mn;
+  let h=0, sa=0;
+  if (d) {
+    sa = l>.5 ? d/(2-mx-mn) : d/(mx+mn);
+    h = (mx===r ? ((g-b)/d + (g<b?6:0)) : mx===g ? (b-r)/d+2 : (r-g)/d+4) * 60;
+  }
+  return `hsl(${Math.round(h)} ${Math.round(sa*100)}% ${Math.round(Math.min(.84, Math.max(.18, l+dl))*100)}%)`;
+}
+
+function isDarkNow() {
+  return (document.documentElement.getAttribute('data-theme')
+       || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light')) === 'dark';
+}
+
+let _rampCache = { key:'', colors:null };
+function chartRamp() {
+  const pal = (typeof State !== 'undefined' && State.palette) || 'teal';
+  const key = pal + (isDarkNow() ? '/d' : '/l');
+  if (_rampCache.key === key) return _rampCache.colors;
+  const spec = RAMP_SPEC[pal];
+  let cols;
+  if (!spec) {
+    cols = CHART_COLORS.concat(CHART_COLORS.slice(0, RAMP_N - CHART_COLORS.length)
+      .map((c, i) => shiftLightness(c, i % 2 ? .18 : -.15)));
+  } else {
+    const [lLo, lHi] = isDarkNow() ? spec.dark : spec.light;
+    const [sHi, sLo] = spec.sat;
+    cols = [];
+    for (let i = 0; i < RAMP_N; i++) {
+      const t = (i % RAMP_STEPS) / (RAMP_STEPS - 1);
+      const h = spec.hues[i % spec.hues.length];
+      cols.push(`hsl(${h} ${Math.round((sHi + (sLo - sHi) * t) * 100)}% ${Math.round((lLo + (lHi - lLo) * t) * 100)}%)`);
+    }
+  }
+  _rampCache = { key, colors: cols };
+  return cols;
+}
+
+// A slice's colour belongs to the category, not to where it ranked this month. Assigned
+// by a hash of the category id and resolved over the whole list in a fixed order, so
+// what you spent cannot move it: Food is the same colour in January and in June.
+let _catColorCache = { key:'', map:null };
+function catColorMap() {
+  const ramp = chartRamp();
+  const ids = State.categories.map(c => c.id).sort();
+  const key = (State.palette || 'teal') + (isDarkNow() ? '/d/' : '/l/') + ids.join(',');
+  if (_catColorCache.key === key) return _catColorCache.map;
+  const map = {}, taken = new Set();
+  for (const id of ids) {
+    let h = 2166136261;
+    for (let i = 0; i < id.length; i++) { h ^= id.charCodeAt(i); h = Math.imul(h, 16777619); }
+    let idx = (h >>> 0) % ramp.length, k = 0;
+    while (taken.has(idx) && k < ramp.length) { idx = (idx + 1) % ramp.length; k++; }
+    taken.add(idx); map[id] = ramp[idx];
+  }
+  _catColorCache = { key, map };
+  return map;
+}
+
+// There are more categories than ramp entries, so two visible slices can still collide.
+// Identity wins where it can; where it cannot, the lower-ranked slice steps aside, so a
+// chart is never two identical wedges.
+function sliceColors(ids) {
+  const ramp = chartRamp(), map = catColorMap(), used = new Set();
+  return ids.map(id => {
+    let c = map[id] || ramp[0];
+    if (used.has(c)) {
+      const start = ramp.indexOf(c);
+      for (let k = 1; k <= ramp.length; k++) {
+        const alt = ramp[(start + k) % ramp.length];
+        if (!used.has(alt)) { c = alt; break; }
+      }
+    }
+    used.add(c); return c;
+  });
+}
 // Read a live token off the document so charts follow the theme instead of guessing at it.
 const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 
@@ -1945,14 +2043,15 @@ function renderDonut(sorted, total) {
   const canvas = document.getElementById('donut-chart'); if(!canvas)return;
   if (typeof Chart === 'undefined') { chartUnavailable(canvas); return; }
   if(State.charts.donut){State.charts.donut.destroy();}
+  const _sliceCols = sliceColors(sorted.map(([id])=>id));
   State.charts.donut = new Chart(canvas,{
     type:'doughnut',
-    data:{ labels:sorted.map(([id])=>getCat(id).name), datasets:[{ data:sorted.map(([,v])=>v), backgroundColor:sorted.map((_,i)=>CHART_COLORS[i%CHART_COLORS.length]), borderWidth:0, hoverOffset:6 }] },
+    data:{ labels:sorted.map(([id])=>getCat(id).name), datasets:[{ data:sorted.map(([,v])=>v), backgroundColor:_sliceCols, borderWidth:0, hoverOffset:6 }] },
     options:{ cutout:'68%', responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>` ${fmt.currency(ctx.raw)} (${(ctx.raw/total*100).toFixed(1)}%)` } } } }
   });
   const legend = document.getElementById('cat-legend');
   if(legend) legend.innerHTML = sorted.slice(0,8).map(([id,val],i)=>
-    `<div class="cat-legend-item"><div class="cat-dot" style="background:${CHART_COLORS[i%CHART_COLORS.length]}"></div>
+    `<div class="cat-legend-item"><div class="cat-dot" style="background:${_sliceCols[i]}"></div>
     <span class="cat-legend-name">${getCat(id).name}</span>
     <span class="cat-legend-pct">${(val/total*100).toFixed(0)}%</span>
     <span class="cat-legend-amt">${fmt.currency(val)}</span></div>`).join('');
@@ -1966,7 +2065,7 @@ function renderTrend(byMonth) {
   const textColor = isDark?'rgba(232,245,242,.64)':'rgba(11,22,24,.66)';
   const gridColor = isDark?'rgba(255,255,255,0.07)':'rgba(11,22,24,0.07)';
   const line = cssVar('--accent') || '#0B6B63';
-  const lineFill = isDark?'rgba(84,216,196,0.14)':'rgba(7,105,95,0.12)';
+  const lineFill = cssVar('--accent-soft') || (isDark?'rgba(84,216,196,0.14)':'rgba(7,105,95,0.12)');
   State.charts.trend = new Chart(canvas,{
     type:'line',
     data:{ labels:Array.from({length:12},(_,i)=>fmt.monthShort(i)), datasets:[{ data:Array.from({length:12},(_,i)=>byMonth[i]||0), borderColor:line, backgroundColor:lineFill, borderWidth:2.5, fill:true, tension:0.4, pointBackgroundColor:line, pointRadius:4, pointHoverRadius:6 }] },
@@ -2506,7 +2605,7 @@ document.getElementById('cat-modal-save').addEventListener('click', async () => 
   const name  = document.getElementById('new-cat-name').value.trim();
   const mainCat = document.getElementById('new-cat-main').value;
   if (!emoji||!name) { toast('Fill in both fields'); return; }
-  const cat = { id:uid(), name, icon:emoji, color:CHART_COLORS[State.categories.length%CHART_COLORS.length], mainCat, custom:true };
+  const cat = { id:uid(), name, icon:emoji, color:chartRamp()[State.categories.length%chartRamp().length], mainCat, custom:true };
   await DB.put('categories',cat);
   State.categories.push(cat);
   State.selectedCategory = cat.id;
@@ -2877,7 +2976,7 @@ document.getElementById('export-pdf').addEventListener('click', async () => {
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>SpendTrack Report</title>
     <style>body{font-family:system-ui;margin:32px;font-size:14px}h1{font-size:24px;margin-bottom:4px}.meta{color:#6E6E73;margin-bottom:24px}
     table{width:100%;border-collapse:collapse;margin-bottom:24px}th{background:#0B3F3A;color:#E8F5F2;padding:8px 10px;text-align:left;font-size:13px}
-    td{padding:7px 10px;border-bottom:1px solid #E5E5EA}.total{font-size:18px;font-weight:700;color:#07695F;text-align:right;margin-bottom:24px}</style></head>
+    td{padding:7px 10px;border-bottom:1px solid #E5E5EA}.total{font-size:18px;font-weight:700;color:#065E55;text-align:right;margin-bottom:24px}</style></head>
     <body><h1>SpendTrack Report</h1><div class="meta">Generated ${new Date().toLocaleString('en-SG')} · ${exps.length} entries</div>
     <div class="total">Total: S$${total.toFixed(2)}</div>
     <h2>By Category</h2><table><thead><tr><th>Category</th><th style="text-align:right">Amount</th></tr></thead><tbody>${catSummary}</tbody></table>
@@ -2904,6 +3003,10 @@ function applyPalette(id) {
   // the installed PWA's status bar and splash follow whatever ground is active
   const top = getComputedStyle(document.documentElement).getPropertyValue('--field-1').trim();
   if (top) document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute('content', top));
+  // The ramp is derived, so a new ground invalidates it and anything drawn from it.
+  _rampCache = { key:'', colors:null };
+  _catColorCache = { key:'', map:null };
+  if (State.view === 'chart' && typeof renderChart === 'function' && State.categories.length) renderChart();
 }
 window.setPalette = function(id) { applyPalette(id); renderSettings(); };
 
